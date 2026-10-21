@@ -14,27 +14,38 @@ public partial class App : Application
     /// <summary>Asked on a user exit (tray, restart); return false to stay. May ask the user.</summary>
     public static Func<bool>? ConfirmExit;
 
-    /// <summary>"Remove data &amp; autostart": undo what the app registered and return null, or return why not (shown to the user).</summary>
+    /// <summary>"Remove data &amp; autostart" and uninstall: undo what the app registered and return null, or return why not (shown to the user).
+    /// Set it before Installer.HandleAsync: --uninstall calls it there.</summary>
     public static Func<string?>? RemoveData;
+
+    /// <summary>Installer turns autostart on for a fresh install: Sidechain is meant to run in the background.</summary>
+    public static bool AutostartOnInstall = true;
 
     static MainWindow? window;
     static bool quitting;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
         var a = Args.Current;
         Crash.Install(this);
-        if (!SingleInstance.Acquire(() => Dispatcher.BeginInvoke(() => ShowMain(null))))
+        Settings.Load();
+        Loc.Apply(Settings.Current.Language);
+        // App hooks that --uninstall needs (App.RemoveData) go here, before the installer; Sidechain registers nothing of its own.
+        // Update and uninstall close the running copy through the exit channel: Quit → App.Exiting → volumes back first.
+        if (await Installer.HandleAsync()) // install, update, switch to the installed copy or uninstall: this process is done
         {
             Shutdown();
             return;
         }
-        Settings.Load();
-        Loc.Apply(Settings.Current.Language);
+        if (!SingleInstance.Acquire(() => Dispatcher.BeginInvoke(() => ShowMain(null)), () => Dispatcher.BeginInvoke(() => Quit(confirm: false))))
+        {
+            Shutdown();
+            return;
+        }
         Log.Info($"start {AppInfo.Version}{(a.Unknown.Count > 0 ? $", {a.Unknown.Count} unknown argument(s)" : "")}");
 
-        if (!a.Demo && Install.IsInstalled) InstalledStart(); // Debug builds and exes in Downloads write nothing by themselves
+        if (!a.Demo && Install.IsInstalled) Installer.InstalledStart(AutostartOnInstall); // Debug builds and exes elsewhere write nothing by themselves
 
         // App features: the audio engine (DemoBackend under --demo), the settings section
         Features.Startup.Init();
@@ -80,21 +91,6 @@ public partial class App : Application
         if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
         window.Activate();
         if (page is not null) window.Navigate(page);
-    }
-
-    /// <summary>The exe is in %LOCALAPPDATA%\Programs\&lt;App&gt;\: repair paths if it moved, first start turns the Start menu shortcut on.</summary>
-    static void InstalledStart()
-    {
-        try
-        {
-            Autostart.FixPath();
-            StartMenu.FixPath();
-            if (Settings.Current.FirstRunDone) return;
-            StartMenu.Set(true);
-            Settings.Current.FirstRunDone = true;
-            Settings.Save();
-        }
-        catch (Exception e) { Log.Error("installed start", e); }
     }
 
     public static void RaiseExiting()

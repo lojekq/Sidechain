@@ -57,16 +57,17 @@ It is a slow automatic volume, not a limiter: the first half second of a loud ad
 
 ## Download
 
-1. Get **`Sidechain-x.y.z-win-x64.exe`** from [Releases](https://github.com/lojekq/Sidechain/releases/latest). Single file, no install, no admin.
-2. Smaller build: `Sidechain-x.y.z-win-x64-fd.zip` (needs [.NET Desktop Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0)).
+1. **[Download Sidechain.exe](https://github.com/lojekq/Sidechain/releases/latest/download/Sidechain.exe)** (latest release). One file, no admin rights.
+2. Smaller build: [`Sidechain-fd.zip`](https://github.com/lojekq/Sidechain/releases/latest/download/Sidechain-fd.zip) (needs [.NET Desktop Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0)).
 3. Optional check: `gh attestation verify <file> -R lojekq/Sidechain` or compare with `SHA256SUMS.txt`.
 
 Requirements: Windows 11 x64. Windows 10 22H2 should work but is not tested.
 
 ## First run
 
-Put the exe into a permanent folder first, for example `%LOCALAPPDATA%\Programs\Sidechain\`: autostart and the shortcut point to it.
-On the first start Windows may show a SmartScreen warning (see FAQ). The app then lives in the tray; turn on **Start with Windows** in Settings.
+Run the downloaded exe from anywhere. Windows may show a SmartScreen warning first (see FAQ).
+The app offers to install itself: **Install** copies it to `%LOCALAPPDATA%\Programs\Sidechain\`, adds a Start menu shortcut, autostart and an entry in Settings → Apps; no admin rights.
+**Run without installing** keeps it portable. To update, run a newer exe the same way: it gives the volumes back, replaces the installed copy and restarts it.
 The first rule is ready: Discord and Telegram duck Spotify, browsers and players by 12 dB. Games are not ducked unless you add them.
 
 ## Settings
@@ -83,8 +84,9 @@ The first rule is ready: Discord and Telegram duck Spotify, browsers and players
 | Pause or resume | `Ctrl+Alt+Shift+S` | A global hotkey; clear it in Settings |
 | Windows call ducking | not touched | **Turn off** sets Windows to "Do nothing" during calls; **Restore as it was** brings your value back |
 | Language, theme | Windows | English or Russian (after a restart), light or dark |
-| Start with Windows | off | Starts minimized to the tray |
-| Start menu shortcut | on when the exe is in `%LOCALAPPDATA%\Programs\Sidechain\` | A shortcut in the Start menu |
+| Start with Windows | on after install | Starts minimized to the tray |
+| Start menu shortcut | on after install | A shortcut in the Start menu |
+| Installation | — | Install, or Uninstall when installed |
 | Check for updates | on | Once a day asks GitHub about a new release |
 
 Settings, the restore journal and logs live in `%APPDATA%\Sidechain`. The tray menu also has Pause (15 min, 1 h, until resumed), the output device and **Restore all volumes**.
@@ -100,7 +102,7 @@ Smart App Control, if it is on, blocks unsigned files with no way to allow one; 
 
 <details><summary>My antivirus flags it</summary>
 
-It is a false positive: the app has no installer, no packer and no obfuscation. The leveler's process loopback may look like audio capture to a heuristic; see Privacy. Please report it to your antivirus vendor
+It is a false positive: the app has no packer and no obfuscation, and it installs only into your user folder. The leveler's process loopback may look like audio capture to a heuristic; see Privacy. Please report it to your antivirus vendor
 and open an issue with the detection name and the SHA256 of the file.
 </details>
 
@@ -124,7 +126,8 @@ Apps that use WASAPI exclusive mode can't be ducked at all.
 
 <details><summary>How do I uninstall?</summary>
 
-About → **Remove data and autostart**, then delete the exe. Volumes are restored before the data is removed.
+Settings → **Uninstall**, or Windows Settings → Apps → Sidechain → Uninstall. You choose whether settings and logs go too.
+Without installing: About → **Remove data and autostart**, then delete the exe. Either way the volumes are given back first.
 </details>
 
 ## Privacy
