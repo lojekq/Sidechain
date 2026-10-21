@@ -41,7 +41,7 @@ public sealed class AppRowVm(string app) : INotifyPropertyChanged
         if (Title != r.Title) { Title = r.Title; Changed(nameof(Title)); Changed(nameof(Letter)); }
         if (Icon is null && r.ExePath is not null && ExeIcon.Get(r.ExePath) is { } icon) { Icon = icon; Changed(nameof(Icon)); Changed(nameof(GlyphVisibility)); }
         var detail = r.Sessions > 1 ? $"{r.Devices} · {string.Format(Loc.T("Live.Streams"), r.Sessions)}" : r.Devices;
-        if (r.LevelerDb is { } lev) detail += " · " + string.Format(Loc.T("Live.Leveling"), TrayMenu.FormatDb(lev));
+        if (r.LevelerDb is { } lev) detail = string.Format(Loc.T("Live.Leveling"), TrayMenu.FormatDb(lev)) + " · " + detail; // first: the device name gets cut
         Set(nameof(Detail), Detail, detail, v => Detail = v);
         MedianDb = r.LevelMedianDb;
         if (Leveled != r.LevelerDb.HasValue)

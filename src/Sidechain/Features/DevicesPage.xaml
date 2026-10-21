@@ -35,6 +35,10 @@
             <ui:TextBlock x:Name="OthersTitle" Text="{l:T Devices.Others}" FontTypography="BodyStrong" Margin="0,16,0,6" />
             <StackPanel x:Name="OtherList" />
 
+            <ui:TextBlock Text="{l:T Devices.Log}" FontTypography="BodyStrong" Margin="0,16,0,6" />
+            <ui:TextBlock x:Name="LogEmpty" Text="{l:T Devices.Log.Empty}" Appearance="Tertiary" />
+            <StackPanel x:Name="LogList" />
+
             <ui:TextBlock Text="{l:T Devices.Mic}" FontTypography="Subtitle" Margin="0,24,0,8" />
             <ui:CardControl Icon="{ui:SymbolIcon Mic24}" Margin="0,0,0,16">
                 <ui:CardControl.Header>
@@ -50,9 +54,6 @@
             <ui:TextBlock x:Name="MicOthersTitle" Text="{l:T Devices.Others}" FontTypography="BodyStrong" Margin="0,16,0,6" />
             <StackPanel x:Name="MicOtherList" />
 
-            <ui:TextBlock Text="{l:T Devices.Log}" FontTypography="BodyStrong" Margin="0,24,0,6" />
-            <ui:TextBlock x:Name="LogEmpty" Text="{l:T Devices.Log.Empty}" Appearance="Tertiary" />
-            <StackPanel x:Name="LogList" />
         </StackPanel>
     </ScrollViewer>
 </Page>
