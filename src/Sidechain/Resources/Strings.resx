@@ -7,7 +7,6 @@
   <data name="Tray.Open" xml:space="preserve"><value>Open</value></data>
   <data name="Tray.Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="Tray.Hidden" xml:space="preserve"><value>Still running in the notification area. To quit, right-click the icon and choose Exit.</value></data>
-  <data name="Page.Main" xml:space="preserve"><value>Home</value></data>
   <data name="Page.Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="Page.About" xml:space="preserve"><value>About</value></data>
   <data name="Settings.Language" xml:space="preserve"><value>Language</value></data>
@@ -43,13 +42,101 @@ Open the folder?</value></data>
   <data name="Hotkey.Placeholder" xml:space="preserve"><value>Press a key combination</value></data>
   <data name="Hotkey.Busy" xml:space="preserve"><value>Taken by another program</value></data>
   <data name="Hotkey.Failed" xml:space="preserve"><value>Could not register</value></data>
-  <data name="Sample.Hotkey" xml:space="preserve"><value>Hotkey to show the window</value></data>
-  <data name="Main.Title" xml:space="preserve"><value>Tasks</value></data>
-  <data name="Main.Subtitle" xml:space="preserve"><value>Sample page of the template. Replace it with the app's own pages.</value></data>
-  <data name="Main.Empty" xml:space="preserve"><value>Nothing here yet.</value></data>
-  <data name="Demo.Build" xml:space="preserve"><value>Project build</value></data>
-  <data name="Demo.Dataset" xml:space="preserve"><value>Dataset download</value></data>
-  <data name="Demo.Report" xml:space="preserve"><value>Report for Alex</value></data>
-  <data name="Demo.Daily" xml:space="preserve"><value>every day at 6 PM</value></data>
-  <data name="Demo.Backup" xml:space="preserve"><value>Nightly backup</value></data>
+  <data name="Page.Live" xml:space="preserve"><value>Now</value></data>
+  <data name="Page.Rules" xml:space="preserve"><value>Rules</value></data>
+  <data name="Page.Devices" xml:space="preserve"><value>Devices</value></data>
+  <data name="State.Working" xml:space="preserve"><value>Working: nothing to duck right now</value></data>
+  <data name="State.Ducking" xml:space="preserve"><value>Ducking</value></data>
+  <data name="State.DuckingBy" xml:space="preserve"><value>Ducking: {0} is talking</value></data>
+  <data name="State.Paused" xml:space="preserve"><value>Paused until you resume</value></data>
+  <data name="State.PausedUntil" xml:space="preserve"><value>Paused until {0:HH:mm}</value></data>
+  <data name="State.Error" xml:space="preserve"><value>Audio service unavailable, trying again</value></data>
+  <data name="State.Quiet" xml:space="preserve"><value>quiet</value></data>
+  <data name="Db.Format" xml:space="preserve"><value>{0} dB</value></data>
+  <data name="Live.Empty" xml:space="preserve"><value>No app is playing sound right now.</value></data>
+  <data name="Live.Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Live.Volume" xml:space="preserve"><value>Volume</value></data>
+  <data name="Live.Gain" xml:space="preserve"><value>Ducking</value></data>
+  <data name="Live.Streams" xml:space="preserve"><value>{0} streams</value></data>
+  <data name="Role.None" xml:space="preserve"><value>—</value></data>
+  <data name="Role.Trigger" xml:space="preserve"><value>Trigger</value></data>
+  <data name="Role.Target" xml:space="preserve"><value>Target</value></data>
+  <data name="WinDuck.BannerTitle" xml:space="preserve"><value>Windows lowers other sounds during calls</value></data>
+  <data name="WinDuck.Banner" xml:space="preserve"><value>Together with Sidechain your music gets ducked twice. Turn off the Windows ducking; you can bring it back in Settings.</value></data>
+  <data name="WinDuck.TurnOff" xml:space="preserve"><value>Turn off</value></data>
+  <data name="WinDuck.Title" xml:space="preserve"><value>Windows call ducking</value></data>
+  <data name="WinDuck.State" xml:space="preserve"><value>Now: {0}</value></data>
+  <data name="WinDuck.0" xml:space="preserve"><value>mute all other sounds</value></data>
+  <data name="WinDuck.1" xml:space="preserve"><value>reduce other sounds by 80 %</value></data>
+  <data name="WinDuck.2" xml:space="preserve"><value>reduce other sounds by 50 %</value></data>
+  <data name="WinDuck.3" xml:space="preserve"><value>do nothing</value></data>
+  <data name="WinDuck.Restore" xml:space="preserve"><value>Restore as it was ({0})</value></data>
+  <data name="WinDuck.Note" xml:space="preserve"><value>Windows applies the change after you sign out or restart.</value></data>
+  <data name="WinDuck.Open" xml:space="preserve"><value>Open Windows sound settings (Communications tab)</value></data>
+  <data name="WinDuck.DiscordTitle" xml:space="preserve"><value>Discord has its own ducking</value></data>
+  <data name="WinDuck.Discord" xml:space="preserve"><value>If Attenuation is on in Discord (Voice &amp; Video), turn it off, or your music gets ducked twice.</value></data>
+  <data name="Restore.All" xml:space="preserve"><value>Restore all volumes</value></data>
+  <data name="Restore.Note" xml:space="preserve"><value>Puts every app back to its own volume right now.</value></data>
+  <data name="Tray.Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="Tray.Pause15" xml:space="preserve"><value>15 minutes</value></data>
+  <data name="Tray.Pause60" xml:space="preserve"><value>1 hour</value></data>
+  <data name="Tray.PauseOn" xml:space="preserve"><value>Until I resume</value></data>
+  <data name="Tray.Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Tray.Device" xml:space="preserve"><value>Output device</value></data>
+  <data name="Tray.Pin" xml:space="preserve"><value>Pin the output device</value></data>
+  <data name="Pin.Switched" xml:space="preserve"><value>Back to {0} · click to undo</value></data>
+  <data name="Pin.War" xml:space="preserve"><value>Another program keeps changing the output device, so pinning is off. Turn it on again on the Devices page.</value></data>
+  <data name="Pin.Broken" xml:space="preserve"><value>Windows did not accept the device change, pinning is off</value></data>
+  <data name="Devices.Subtitle" xml:space="preserve"><value>When a monitor over HDMI or a new device takes the sound over, Sidechain switches back to the first available device of this list. Your own choice in Windows stays.</value></data>
+  <data name="Devices.Undo.Title" xml:space="preserve"><value>Output device switched back</value></data>
+  <data name="Devices.Undo.Message" xml:space="preserve"><value>{1} took over, switched back to {0}.</value></data>
+  <data name="Devices.Undo" xml:space="preserve"><value>Keep as it was</value></data>
+  <data name="Devices.NotListed.Title" xml:space="preserve"><value>The current device is not on the list</value></data>
+  <data name="Devices.NotListed" xml:space="preserve"><value>The sound goes to {0} now.</value></data>
+  <data name="Devices.MakeMain" xml:space="preserve"><value>Make it main</value></data>
+  <data name="Devices.Pin" xml:space="preserve"><value>Pin the output device</value></data>
+  <data name="Devices.Comm" xml:space="preserve"><value>Also for calls</value></data>
+  <data name="Devices.Comm.Note" xml:space="preserve"><value>Pin the Communications device too. A Bluetooth headset in a call becomes a separate device, so this is off by default.</value></data>
+  <data name="Devices.Priority" xml:space="preserve"><value>Priority</value></data>
+  <data name="Devices.Others" xml:space="preserve"><value>Other active devices</value></data>
+  <data name="Devices.Log" xml:space="preserve"><value>Recent automatic switches</value></data>
+  <data name="Devices.Log.Empty" xml:space="preserve"><value>None yet.</value></data>
+  <data name="Devices.LogLine" xml:space="preserve"><value>{0:HH:mm}   {1} took over → back to {2}</value></data>
+  <data name="Devices.Active" xml:space="preserve"><value>active</value></data>
+  <data name="Devices.Default" xml:space="preserve"><value>active · the sound is here now</value></data>
+  <data name="Devices.Missing" xml:space="preserve"><value>not connected</value></data>
+  <data name="Devices.Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Devices.Up" xml:space="preserve"><value>Up</value></data>
+  <data name="Devices.Down" xml:space="preserve"><value>Down</value></data>
+  <data name="Devices.Remove" xml:space="preserve"><value>Remove from the list</value></data>
+  <data name="Rules.Add" xml:space="preserve"><value>Add rule</value></data>
+  <data name="Rules.Subtitle" xml:space="preserve"><value>When a trigger app makes sound, its targets step aside by the set depth and come back after it stops.</value></data>
+  <data name="Rules.Name" xml:space="preserve"><value>Rule {0}</value></data>
+  <data name="Rules.New" xml:space="preserve"><value>New rule</value></data>
+  <data name="Rules.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Rules.Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Rules.Triggers" xml:space="preserve"><value>Triggers</value></data>
+  <data name="Rules.Triggers.Note" xml:space="preserve"><value>Apps whose sound starts the ducking: Discord, Telegram, a game chat.</value></data>
+  <data name="Rules.Targets" xml:space="preserve"><value>Targets</value></data>
+  <data name="Rules.Targets.Note" xml:space="preserve"><value>Apps that get quieter. All others means every app except triggers and system sounds.</value></data>
+  <data name="Rules.AddApp" xml:space="preserve"><value>Add</value></data>
+  <data name="Rules.AllOthers" xml:space="preserve"><value>All others</value></data>
+  <data name="Rules.Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Rules.Threshold" xml:space="preserve"><value>Threshold</value></data>
+  <data name="Rules.Threshold.Note" xml:space="preserve"><value>The live level of the triggers: ducking starts when it crosses the line.</value></data>
+  <data name="Rules.Dbfs" xml:space="preserve"><value>{0} dBFS</value></data>
+  <data name="Rules.Depth" xml:space="preserve"><value>Depth</value></data>
+  <data name="Rules.Depth.Note" xml:space="preserve"><value>How much quieter the targets get.</value></data>
+  <data name="Rules.Timing" xml:space="preserve"><value>Timing</value></data>
+  <data name="Rules.Attack" xml:space="preserve"><value>Attack, ms</value></data>
+  <data name="Rules.Hold" xml:space="preserve"><value>Hold, ms</value></data>
+  <data name="Rules.Release" xml:space="preserve"><value>Release, ms</value></data>
+  <data name="Rules.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Rules.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Rules.Err.NoTriggers" xml:space="preserve"><value>Add at least one trigger.</value></data>
+  <data name="Rules.Err.NoTargets" xml:space="preserve"><value>Add at least one target.</value></data>
+  <data name="Rules.Err.Both" xml:space="preserve"><value>{0} can't be a trigger and a target at once.</value></data>
+  <data name="Rules.Err.Loop" xml:space="preserve"><value>{0} is a trigger in rule {1}, so it can't be a target in rule {2}.</value></data>
+  <data name="Demo.Phones" xml:space="preserve"><value>Headphones (Arctis Nova 7)</value></data>
+  <data name="Demo.Speakers" xml:space="preserve"><value>Speakers (Realtek(R) Audio)</value></data>
 </root>

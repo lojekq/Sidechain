@@ -1,0 +1,76 @@
+<Page x:Class="Sidechain.Features.LivePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:l="clr-namespace:Sidechain.Shell"
+      xmlns:f="clr-namespace:Sidechain.Features">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,12,24,24" MaxWidth="960">
+            <ui:TextBlock FontTypography="Title" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{l:T Page.Live}" />
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,14">
+                <Ellipse x:Name="StatusDot" Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <ui:TextBlock x:Name="StatusText" Appearance="Secondary" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <ui:InfoBar x:Name="WinDuckBar" Severity="Warning" IsClosable="False" Margin="0,0,0,12"
+                        Title="{l:T WinDuck.BannerTitle}" Message="{l:T WinDuck.Banner}">
+                <ui:Button x:Name="WinDuckOff" Content="{l:T WinDuck.TurnOff}" />
+            </ui:InfoBar>
+
+            <ui:TextBlock x:Name="EmptyText" Appearance="Tertiary" Text="{l:T Live.Empty}" />
+            <ItemsControl x:Name="AppList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type f:AppRowVm}">
+                        <Border Margin="0,0,0,4" Padding="14,10" CornerRadius="6" BorderThickness="1"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" MinWidth="150" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="150" />
+                                </Grid.ColumnDefinitions>
+                                <Grid Width="28" Height="28" HorizontalAlignment="Left">
+                                    <Border CornerRadius="14" Background="{Binding Badge}" Visibility="{Binding GlyphVisibility}">
+                                        <TextBlock Text="{Binding Letter}" Foreground="White" FontWeight="SemiBold" FontSize="13"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Image Source="{Binding Icon}" Width="24" Height="24" />
+                                </Grid>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <ui:TextBlock Text="{Binding Title}" FontTypography="BodyStrong" TextTrimming="CharacterEllipsis" />
+                                    <ui:TextBlock Text="{Binding Detail}" FontTypography="Caption" Appearance="Secondary" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <Border Grid.Column="2" CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        Background="{Binding RoleBrush}">
+                                    <TextBlock Text="{Binding RoleText}" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                </Border>
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <ui:TextBlock Text="{l:T Live.Level}" FontTypography="Caption" Appearance="Tertiary" />
+                                    <ProgressBar Value="{Binding Meter, Mode=OneWay}" Maximum="1" Height="6" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                                    <ui:TextBlock Text="{l:T Live.Volume}" FontTypography="Caption" Appearance="Tertiary" />
+                                    <ui:TextBlock Text="{Binding BaselineText}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="5" VerticalAlignment="Center">
+                                    <Grid>
+                                        <ui:TextBlock Text="{l:T Live.Gain}" FontTypography="Caption" Appearance="Tertiary" />
+                                        <ui:TextBlock Text="{Binding GainText}" FontTypography="Caption" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <Border Height="6" Margin="0,4,0,0" CornerRadius="3" Background="{DynamicResource ControlStrokeColorDefaultBrush}">
+                                        <Border CornerRadius="3" HorizontalAlignment="Left" Width="{Binding GainWidth}"
+                                                Background="{DynamicResource AccentFillColorDefaultBrush}" />
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

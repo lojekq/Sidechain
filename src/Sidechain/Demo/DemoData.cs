@@ -1,18 +1,26 @@
 using Sidechain.Features;
+using Sidechain.Features.Core;
 using Sidechain.Shell;
 
 namespace Sidechain.Demo;
 
 /// <summary>
-/// --demo: believable data for screenshots and GIFs. Names like Alex, example.com, C:\Users\demo\…; never real data.
-/// Under --demo no real services start, nothing is written, no hotkeys, no update check (00-shared §2.3).
+/// --demo: believable data for screenshots and GIFs (spec §10). Never real data; nothing is written,
+/// no real audio is touched: the engine runs on DemoBackend, settings live in memory.
 /// </summary>
 public static class DemoData
 {
-    public static void Fill()
+    public static void Fill(Engine engine)
     {
-        MainPage.Items.Add(new(Loc.T("Demo.Build"), @"C:\Users\demo\src\shop", true));
-        MainPage.Items.Add(new(Loc.T("Demo.Dataset"), "https://example.com/data.zip", true));
-        MainPage.Items.Add(new(Loc.T("Demo.Report"), Loc.T("Demo.Daily"), false));
+        var s = Settings.Current;
+        s.Rules = Rules.Default();
+        s.Pin = new PinSettings
+        {
+            Enabled = true, Seeded = true,
+            Priority = [new("demo-phones", Loc.T("Demo.Phones")), new("demo-speakers", Loc.T("Demo.Speakers"))],
+        };
+        engine.SeedLog(new PinEvent(DateTime.Today.AddHours(21).AddMinutes(14),
+            new("demo-dell", "DELL U2723QE (NVIDIA High Definition Audio)"), new("demo-phones", Loc.T("Demo.Phones"))));
+        if (Args.Current.Autoplay) DemoBackend.TalkFrom = double.PositiveInfinity; // Autoplay starts the talk on cue
     }
 }

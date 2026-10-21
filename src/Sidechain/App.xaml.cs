@@ -34,12 +34,10 @@ public partial class App : Application
         Loc.Apply(Settings.Current.Language);
         Log.Info($"start {AppInfo.Version}{(a.Unknown.Count > 0 ? $", {a.Unknown.Count} unknown argument(s)" : "")}");
 
-        if (a.Demo) DemoData.Fill();
-        else if (Install.IsInstalled) InstalledStart(); // Debug builds and exes in Downloads write nothing by themselves
+        if (!a.Demo && Install.IsInstalled) InstalledStart(); // Debug builds and exes in Downloads write nothing by themselves
 
-        // App features: services, hotkeys, tray items, settings section (template sample below)
-        SettingsPage.AppSection = SampleSettings.Create;
-        SampleSettings.Apply();
+        // App features: the audio engine (DemoBackend under --demo), the settings section
+        Features.Startup.Init();
 
         window = new MainWindow();
         if (a.Width > 0) (window.Width, window.Height) = (a.Width, a.Height);
@@ -56,7 +54,11 @@ public partial class App : Application
         };
         Capture.Attach(window, () => { if (a.Autoplay) Autoplay.Start(window); });
 
-        if (a.Screenshot is null) Tray.Create(ShowMain, () => Quit());
+        if (a.Screenshot is null)
+        {
+            Tray.Create(ShowMain, () => Quit(), TrayMenu.Items());
+            TrayMenu.Start();
+        }
         SessionEnding += (_, _) => RaiseExiting();
         Updates.Found += (version, url) =>
         {

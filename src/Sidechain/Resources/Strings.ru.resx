@@ -7,7 +7,6 @@
   <data name="Tray.Open" xml:space="preserve"><value>Открыть</value></data>
   <data name="Tray.Exit" xml:space="preserve"><value>Выход</value></data>
   <data name="Tray.Hidden" xml:space="preserve"><value>Программа продолжает работать в области уведомлений. Чтобы выйти, щёлкните значок правой кнопкой и выберите «Выход».</value></data>
-  <data name="Page.Main" xml:space="preserve"><value>Главная</value></data>
   <data name="Page.Settings" xml:space="preserve"><value>Настройки</value></data>
   <data name="Page.About" xml:space="preserve"><value>О программе</value></data>
   <data name="Settings.Language" xml:space="preserve"><value>Язык</value></data>
@@ -43,13 +42,101 @@
   <data name="Hotkey.Placeholder" xml:space="preserve"><value>Нажмите сочетание клавиш</value></data>
   <data name="Hotkey.Busy" xml:space="preserve"><value>Занято другой программой</value></data>
   <data name="Hotkey.Failed" xml:space="preserve"><value>Не удалось зарегистрировать</value></data>
-  <data name="Sample.Hotkey" xml:space="preserve"><value>Сочетание клавиш для окна</value></data>
-  <data name="Main.Title" xml:space="preserve"><value>Задачи</value></data>
-  <data name="Main.Subtitle" xml:space="preserve"><value>Пример страницы шаблона. Замените её страницами программы.</value></data>
-  <data name="Main.Empty" xml:space="preserve"><value>Пока пусто.</value></data>
-  <data name="Demo.Build" xml:space="preserve"><value>Сборка проекта</value></data>
-  <data name="Demo.Dataset" xml:space="preserve"><value>Загрузка датасета</value></data>
-  <data name="Demo.Report" xml:space="preserve"><value>Отчёт для Alex</value></data>
-  <data name="Demo.Daily" xml:space="preserve"><value>каждый день в 18:00</value></data>
-  <data name="Demo.Backup" xml:space="preserve"><value>Ночная копия</value></data>
+  <data name="Page.Live" xml:space="preserve"><value>Сейчас</value></data>
+  <data name="Page.Rules" xml:space="preserve"><value>Правила</value></data>
+  <data name="Page.Devices" xml:space="preserve"><value>Устройства</value></data>
+  <data name="State.Working" xml:space="preserve"><value>Работаю: сейчас приглушать нечего</value></data>
+  <data name="State.Ducking" xml:space="preserve"><value>Приглушаю</value></data>
+  <data name="State.DuckingBy" xml:space="preserve"><value>Приглушаю: говорит {0}</value></data>
+  <data name="State.Paused" xml:space="preserve"><value>Пауза до включения</value></data>
+  <data name="State.PausedUntil" xml:space="preserve"><value>Пауза до {0:HH:mm}</value></data>
+  <data name="State.Error" xml:space="preserve"><value>Аудиослужба недоступна, пробую снова</value></data>
+  <data name="State.Quiet" xml:space="preserve"><value>тихо</value></data>
+  <data name="Db.Format" xml:space="preserve"><value>{0} дБ</value></data>
+  <data name="Live.Empty" xml:space="preserve"><value>Сейчас ни одно приложение не выводит звук.</value></data>
+  <data name="Live.Level" xml:space="preserve"><value>Уровень</value></data>
+  <data name="Live.Volume" xml:space="preserve"><value>Громкость</value></data>
+  <data name="Live.Gain" xml:space="preserve"><value>Приглушение</value></data>
+  <data name="Live.Streams" xml:space="preserve"><value>потоков: {0}</value></data>
+  <data name="Role.None" xml:space="preserve"><value>—</value></data>
+  <data name="Role.Trigger" xml:space="preserve"><value>Триггер</value></data>
+  <data name="Role.Target" xml:space="preserve"><value>Цель</value></data>
+  <data name="WinDuck.BannerTitle" xml:space="preserve"><value>Windows сама приглушает звук при звонках</value></data>
+  <data name="WinDuck.Banner" xml:space="preserve"><value>Вместе с Sidechain музыка приглушается дважды. Отключите приглушение Windows, вернуть его можно в настройках.</value></data>
+  <data name="WinDuck.TurnOff" xml:space="preserve"><value>Отключить</value></data>
+  <data name="WinDuck.Title" xml:space="preserve"><value>Приглушение звука при звонках в Windows</value></data>
+  <data name="WinDuck.State" xml:space="preserve"><value>Сейчас: {0}</value></data>
+  <data name="WinDuck.0" xml:space="preserve"><value>отключать все остальные звуки</value></data>
+  <data name="WinDuck.1" xml:space="preserve"><value>уменьшать громкость других звуков на 80 %</value></data>
+  <data name="WinDuck.2" xml:space="preserve"><value>уменьшать громкость других звуков на 50 %</value></data>
+  <data name="WinDuck.3" xml:space="preserve"><value>ничего не делать</value></data>
+  <data name="WinDuck.Restore" xml:space="preserve"><value>Вернуть как было ({0})</value></data>
+  <data name="WinDuck.Note" xml:space="preserve"><value>Windows применит изменение после выхода из системы или перезагрузки.</value></data>
+  <data name="WinDuck.Open" xml:space="preserve"><value>Открыть настройки звука Windows (вкладка «Связь»)</value></data>
+  <data name="WinDuck.DiscordTitle" xml:space="preserve"><value>У Discord своё приглушение</value></data>
+  <data name="WinDuck.Discord" xml:space="preserve"><value>Если в Discord (Голос и видео) включено «Приглушение», выключите его, иначе приглушение будет двойным.</value></data>
+  <data name="Restore.All" xml:space="preserve"><value>Вернуть все громкости</value></data>
+  <data name="Restore.Note" xml:space="preserve"><value>Сразу возвращает каждому приложению его собственную громкость.</value></data>
+  <data name="Tray.Pause" xml:space="preserve"><value>Пауза</value></data>
+  <data name="Tray.Pause15" xml:space="preserve"><value>15 минут</value></data>
+  <data name="Tray.Pause60" xml:space="preserve"><value>1 час</value></data>
+  <data name="Tray.PauseOn" xml:space="preserve"><value>До включения</value></data>
+  <data name="Tray.Resume" xml:space="preserve"><value>Возобновить</value></data>
+  <data name="Tray.Device" xml:space="preserve"><value>Устройство вывода</value></data>
+  <data name="Tray.Pin" xml:space="preserve"><value>Закреплять устройство</value></data>
+  <data name="Pin.Switched" xml:space="preserve"><value>Вернул {0} · нажмите, чтобы отменить</value></data>
+  <data name="Pin.War" xml:space="preserve"><value>Какая-то программа тоже меняет устройство вывода, закрепление выключено. Включить снова можно на странице «Устройства».</value></data>
+  <data name="Pin.Broken" xml:space="preserve"><value>Windows не приняла смену устройства, закрепление выключено</value></data>
+  <data name="Devices.Subtitle" xml:space="preserve"><value>Если HDMI-монитор или новое устройство перехватили звук, Sidechain вернёт первое доступное устройство из списка. Ваш собственный выбор в Windows программа не трогает.</value></data>
+  <data name="Devices.Undo.Title" xml:space="preserve"><value>Устройство вывода возвращено</value></data>
+  <data name="Devices.Undo.Message" xml:space="preserve"><value>{1} перехватило вывод, вернул {0}.</value></data>
+  <data name="Devices.Undo" xml:space="preserve"><value>Оставить как было</value></data>
+  <data name="Devices.NotListed.Title" xml:space="preserve"><value>Текущего устройства нет в списке</value></data>
+  <data name="Devices.NotListed" xml:space="preserve"><value>Сейчас звук идёт на {0}.</value></data>
+  <data name="Devices.MakeMain" xml:space="preserve"><value>Сделать главным</value></data>
+  <data name="Devices.Pin" xml:space="preserve"><value>Закреплять устройство вывода</value></data>
+  <data name="Devices.Comm" xml:space="preserve"><value>Также для связи</value></data>
+  <data name="Devices.Comm.Note" xml:space="preserve"><value>Закреплять и устройство связи. Bluetooth-гарнитура в звонке становится отдельным устройством, поэтому по умолчанию выключено.</value></data>
+  <data name="Devices.Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Devices.Others" xml:space="preserve"><value>Другие активные устройства</value></data>
+  <data name="Devices.Log" xml:space="preserve"><value>Последние автопереключения</value></data>
+  <data name="Devices.Log.Empty" xml:space="preserve"><value>Пока не было.</value></data>
+  <data name="Devices.LogLine" xml:space="preserve"><value>{0:HH:mm}   {1} перехватил → вернул {2}</value></data>
+  <data name="Devices.Active" xml:space="preserve"><value>активно</value></data>
+  <data name="Devices.Default" xml:space="preserve"><value>активно · звук сейчас здесь</value></data>
+  <data name="Devices.Missing" xml:space="preserve"><value>не подключено</value></data>
+  <data name="Devices.Add" xml:space="preserve"><value>Добавить</value></data>
+  <data name="Devices.Up" xml:space="preserve"><value>Выше</value></data>
+  <data name="Devices.Down" xml:space="preserve"><value>Ниже</value></data>
+  <data name="Devices.Remove" xml:space="preserve"><value>Убрать из списка</value></data>
+  <data name="Rules.Add" xml:space="preserve"><value>Добавить правило</value></data>
+  <data name="Rules.Subtitle" xml:space="preserve"><value>Когда приложение-триггер издаёт звук, цели становятся тише на заданную глубину и возвращаются, когда оно замолчит.</value></data>
+  <data name="Rules.Name" xml:space="preserve"><value>Правило {0}</value></data>
+  <data name="Rules.New" xml:space="preserve"><value>Новое правило</value></data>
+  <data name="Rules.Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="Rules.Delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Rules.Triggers" xml:space="preserve"><value>Триггеры</value></data>
+  <data name="Rules.Triggers.Note" xml:space="preserve"><value>Приложения, чей звук включает приглушение: Discord, Telegram, чат игры.</value></data>
+  <data name="Rules.Targets" xml:space="preserve"><value>Цели</value></data>
+  <data name="Rules.Targets.Note" xml:space="preserve"><value>Приложения, которые станут тише. «Все остальные» — все, кроме триггеров и системных звуков.</value></data>
+  <data name="Rules.AddApp" xml:space="preserve"><value>Добавить</value></data>
+  <data name="Rules.AllOthers" xml:space="preserve"><value>Все остальные</value></data>
+  <data name="Rules.Remove" xml:space="preserve"><value>Убрать</value></data>
+  <data name="Rules.Threshold" xml:space="preserve"><value>Порог</value></data>
+  <data name="Rules.Threshold.Note" xml:space="preserve"><value>Живой уровень триггеров: приглушение начинается, когда он пересекает линию.</value></data>
+  <data name="Rules.Dbfs" xml:space="preserve"><value>{0} дБFS</value></data>
+  <data name="Rules.Depth" xml:space="preserve"><value>Глубина</value></data>
+  <data name="Rules.Depth.Note" xml:space="preserve"><value>Насколько тише станут цели.</value></data>
+  <data name="Rules.Timing" xml:space="preserve"><value>Время</value></data>
+  <data name="Rules.Attack" xml:space="preserve"><value>Атака, мс</value></data>
+  <data name="Rules.Hold" xml:space="preserve"><value>Удержание, мс</value></data>
+  <data name="Rules.Release" xml:space="preserve"><value>Релиз, мс</value></data>
+  <data name="Rules.Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Rules.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Rules.Err.NoTriggers" xml:space="preserve"><value>Добавьте хотя бы один триггер.</value></data>
+  <data name="Rules.Err.NoTargets" xml:space="preserve"><value>Добавьте хотя бы одну цель.</value></data>
+  <data name="Rules.Err.Both" xml:space="preserve"><value>{0} не может быть одновременно триггером и целью.</value></data>
+  <data name="Rules.Err.Loop" xml:space="preserve"><value>{0} — триггер в правиле {1}, поэтому не может быть целью в правиле {2}.</value></data>
+  <data name="Demo.Phones" xml:space="preserve"><value>Наушники (Arctis Nova 7)</value></data>
+  <data name="Demo.Speakers" xml:space="preserve"><value>Динамики (Realtek(R) Audio)</value></data>
 </root>
