@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using Sidechain.Shell;
 using Wpf.Ui.Controls;
 using Button = Wpf.Ui.Controls.Button;
@@ -70,6 +71,7 @@ public static class SettingsSection
                 },
             },
         };
+        section.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush"); // a Page's default foreground is black
         if (Args.Current.Demo) section.Loaded += (_, _) => section.BringIntoView(); // the settings screenshot shows this part
         return section;
     }

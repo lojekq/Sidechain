@@ -3,7 +3,7 @@
 
 # Sidechain
 
-**Skeleton for small Windows tray apps: one exe, RU/EN, light and dark, releases from CI.**
+**Someone talks in Discord, your music and browser step aside, then come back.**
 
 **English** · [Русский](README.ru.md)
 
@@ -14,35 +14,43 @@
 [![License](https://img.shields.io/github/license/lojekq/Sidechain)](LICENSE)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/main-dark-en.png">
-  <img src="docs/main-light-en.png" width="820" alt="Sidechain main window">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/live-dark-en.png">
+  <img src="docs/live-light-en.png" width="820" alt="Sidechain: Discord talks, Spotify and Chrome are 12 dB quieter">
 </picture>
 </div>
 
-
 ## Why
 
-Every small Windows utility needs the same boring parts: a tray icon, settings, autostart, two languages, a crash log and a release with checksums.
-Sidechain has them done once, so an app only adds its own pages.
+Per-app sidechain for Windows: when someone talks in Discord, your music and browser step aside — and come back when they stop.
+No more pausing Spotify for every call or missing a word under a loud video.
+Sidechain only changes the volume of other apps, so the sound itself never passes through it.
 
 ## Features
 
-- **Tray first** — left click opens the window, the cross hides it, Exit is in the tray menu.
-- **One exe** — no installer and no admin rights; a Start menu shortcut and autostart are switches in Settings.
-- **English and Russian, light and dark** — follows Windows or your choice.
-- **Honest updates** — once a day it asks GitHub about a new release, shows a note and downloads nothing.
-- **Crash log** — if it fails, it stops and shows where the log is; nothing is sent anywhere.
+- **Ducks by real sound levels** — threshold, depth in dB, attack, hold and release; any app can be a trigger or a target, or "all others".
+- **Whole apps, your volume first** — a browser or a multi-process app counts as one app; ducking is relative to your own volume, and your moves in the mixer win.
+- **Safe** — volumes come back on exit, sleep, a crash or the next start; one button restores everything.
+- **Output device pinning** — an HDMI monitor or a new device can't steal the sound; your own choice in Windows is never undone.
+- **Fixes the Windows call ducking clash** — one click turns off the built-in "reduce other sounds during calls".
+- **Light** — tray app, no admin rights, no telemetry, no virtual audio device and no latency; about 0 % CPU.
 
 ## See it in action
 
 ![Sidechain demo](docs/demo-en.gif)
 
+## How it works
+
+Sidechain uses Windows Core Audio sessions. 40 times a second it reads the peak meters of the trigger apps,
+keeps a gate with a hold, and moves the session volume of the targets in decibels from your own volume.
+Windows remembers every app's volume forever, so a restore journal keeps your levels until they are back.
+
 ## Screenshots
 
 | | Light | Dark |
 |---|---|---|
+| Rules | ![Rules, light](docs/rules-light-en.png) | ![Rules, dark](docs/rules-dark-en.png) |
+| Devices | ![Devices, light](docs/devices-light-en.png) | ![Devices, dark](docs/devices-dark-en.png) |
 | Settings | ![Settings, light](docs/settings-light-en.png) | ![Settings, dark](docs/settings-dark-en.png) |
-| About | ![About, light](docs/about-light-en.png) | ![About, dark](docs/about-dark-en.png) |
 
 ## Download
 
@@ -56,18 +64,23 @@ Requirements: Windows 11 x64. Windows 10 22H2 should work but is not tested.
 
 Put the exe into a permanent folder first, for example `%LOCALAPPDATA%\Programs\Sidechain\`: autostart and the shortcut point to it.
 On the first start Windows may show a SmartScreen warning (see FAQ). The app then lives in the tray; turn on **Start with Windows** in Settings.
+The first rule is ready: Discord and Telegram duck Spotify, browsers and players by 12 dB. Games are not ducked unless you add them.
 
 ## Settings
 
 | Setting | Default | What it does |
 |---|---|---|
-| Language | Windows language | English or Russian, applied after a restart |
-| Theme | Windows theme | Light or dark |
+| Rules | Discord, Telegram → Spotify, Chrome, Edge, Firefox, Yandex Browser, Opera, Brave, VLC, AIMP, foobar2000 | When a trigger is louder than the threshold (−45 dBFS), the targets go down by the depth (12 dB) |
+| Timing | attack 80 ms, hold 400 ms, release 600 ms | How fast the targets go down, how long pauses between words are bridged, how fast they come back |
+| Pin the output device | on, with the device that was default at the first start | Switches back when a device that just appeared (HDMI monitor, new headset) takes the default |
+| Also for calls | off | Pins the Communications device too |
+| Windows call ducking | not touched | **Turn off** sets Windows to "Do nothing" during calls; **Restore as it was** brings your value back |
+| Language, theme | Windows | English or Russian (after a restart), light or dark |
 | Start with Windows | off | Starts minimized to the tray |
 | Start menu shortcut | on when the exe is in `%LOCALAPPDATA%\Programs\Sidechain\` | A shortcut in the Start menu |
 | Check for updates | on | Once a day asks GitHub about a new release |
 
-Settings and logs live in `%APPDATA%\Sidechain`.
+Settings, the restore journal and logs live in `%APPDATA%\Sidechain`. The tray menu also has Pause (15 min, 1 h, until resumed), the output device and **Restore all volumes**.
 
 ## FAQ
 
@@ -84,15 +97,34 @@ It is a false positive: the app has no installer, no packer and no obfuscation. 
 and open an issue with the detection name and the SHA256 of the file.
 </details>
 
+<details><summary>Spotify stayed quiet after Sidechain was killed</summary>
+
+Start Sidechain again: it reads the restore journal and gives the volume back. Or set the volume in the Windows mixer yourself.
+On a normal exit, sleep or sign-out the volumes come back at once.
+</details>
+
+<details><summary>Music is ducked twice during calls</summary>
+
+Windows and Discord can duck too. Turn off the Windows one in Settings (Windows applies it after a sign-out or a restart),
+and turn off **Attenuation** in Discord → Voice & Video.
+</details>
+
+<details><summary>Can it duck one browser tab, or a game's voice chat apart from the game?</summary>
+
+No. All tabs of Chrome or Edge are one audio session in Windows, and a game plays its chat and its sound from one process.
+Apps that use WASAPI exclusive mode can't be ducked at all.
+</details>
+
 <details><summary>How do I uninstall?</summary>
 
-About → **Remove data and autostart**, then delete the exe.
+About → **Remove data and autostart**, then delete the exe. Volumes are restored before the data is removed.
 </details>
 
 ## Privacy
 
 No telemetry. The only network request is the update check: `GET https://api.github.com/repos/lojekq/Sidechain/releases/latest` once a day; turn it off in Settings.
-Logs contain no window titles, paths or other personal data.
+Sidechain does not record or capture sound: it reads the level meters Windows provides and sets session volumes.
+Logs contain no window titles, paths or device names.
 
 ## Build from source
 
@@ -103,6 +135,8 @@ cd Sidechain
 dotnet run --project src/Sidechain
 dotnet test
 ```
+
+`--demo` runs the app on made-up apps and devices without touching real audio.
 
 ## License
 

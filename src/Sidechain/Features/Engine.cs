@@ -318,10 +318,11 @@ public sealed class Engine
     void RestoreAll()
     {
         ducker.Reset();
+        if (backend is null) return; // nothing tracked without a backend; the journal keeps what is left
         foreach (var t in tracked.Values)
         {
             if (t.Written is null) continue;
-            try { backend?.SetVolume(t.S, t.Baseline); t.Written = null; }
+            try { backend.SetVolume(t.S, t.Baseline); t.Written = null; }
             catch (Exception e) { Log.Warn($"{t.S.App}: not restored now, kept in the journal", e); orphans.Add((t.S.App, t.S.DeviceId)); tracked.Remove(t.S.Key); }
         }
         SyncJournal();
