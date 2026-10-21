@@ -16,6 +16,10 @@ public static class AudioFacts
     /// <summary>Process loopback (v1.0 leveler) captures after the session volume: 0.5 → −6.02 dB.</summary>
     public const bool LoopbackIsPostVolume = true;
 
+    /// <summary>Stage 7 spike: capturing a parent PID with IncludeTargetProcessTree gets a child's sound (a browser's audio
+    /// service). One capture costs ~0.3 % of one core with the RMS loop; it needs BuildAsync, not Build.</summary>
+    public const bool LoopbackFollowsTree = true;
+
     /// <summary>IPolicyConfig::SetDefaultEndpoint with the GUIDs from PolicyConfig.cs works on 26300 (read back after the call).</summary>
     public const bool PolicyConfigWorks = true;
 

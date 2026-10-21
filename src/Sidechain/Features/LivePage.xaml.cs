@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Sidechain.Features.Core;
 using Sidechain.Shell;
+using Wpf.Ui.Controls;
 
 namespace Sidechain.Features;
 
@@ -28,13 +29,26 @@ public sealed class AppRowVm(string app) : INotifyPropertyChanged
     public string BaselineText { get; private set; } = "";
     public string GainText { get; private set; } = "";
     public double GainWidth { get; private set; }
+    public double? MedianDb { get; private set; }
+    public bool Leveled { get; private set; }
+    public ControlAppearance LevelAppearance => Leveled ? ControlAppearance.Primary : ControlAppearance.Secondary;
+    public Visibility NormVisibility => Leveled ? Visibility.Visible : Visibility.Collapsed;
+    public string LevelTip => Loc.T(Leveled ? "Live.LevelOff" : "Live.LevelOn");
     AppRole? role;
 
     public void Update(AppRow r)
     {
         if (Title != r.Title) { Title = r.Title; Changed(nameof(Title)); Changed(nameof(Letter)); }
         if (Icon is null && r.ExePath is not null && ExeIcon.Get(r.ExePath) is { } icon) { Icon = icon; Changed(nameof(Icon)); Changed(nameof(GlyphVisibility)); }
-        Set(nameof(Detail), Detail, r.Sessions > 1 ? $"{r.Devices} · {string.Format(Loc.T("Live.Streams"), r.Sessions)}" : r.Devices, v => Detail = v);
+        var detail = r.Sessions > 1 ? $"{r.Devices} · {string.Format(Loc.T("Live.Streams"), r.Sessions)}" : r.Devices;
+        if (r.LevelerDb is { } lev) detail += " · " + string.Format(Loc.T("Live.Leveling"), TrayMenu.FormatDb(lev));
+        Set(nameof(Detail), Detail, detail, v => Detail = v);
+        MedianDb = r.LevelMedianDb;
+        if (Leveled != r.LevelerDb.HasValue)
+        {
+            Leveled = r.LevelerDb.HasValue;
+            Changed(nameof(LevelAppearance)); Changed(nameof(NormVisibility)); Changed(nameof(LevelTip));
+        }
         if (role != r.Role)
         {
             role = r.Role;
@@ -82,6 +96,32 @@ public partial class LivePage
         Loaded += (_, _) => { WinDuckBar.IsOpen = WindowsDucking.Ducks; Refresh(); timer.Start(); };
         Unloaded += (_, _) => timer.Stop();
         WinDuckOff.Click += (_, _) => { WindowsDucking.TurnOff(); WinDuckBar.IsOpen = WindowsDucking.Ducks; };
+    }
+
+    /// <summary>v1.0 leveler on or off for the row's app, 3 apps at most (one capture each).</summary>
+    void LevelClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not AppRowVm row) return;
+        var list = Settings.Current.Leveler;
+        if (list.RemoveAll(x => x.App == row.App) == 0)
+        {
+            if (list.Count >= Engine.MaxLeveled) { Tray.Notify(AppInfo.DisplayName, string.Format(Loc.T("Live.LevelMax"), Engine.MaxLeveled)); return; }
+            list.Add(new LevelerEntry(row.App, Leveler.DefaultTargetDb));
+        }
+        Settings.Save();
+        Engine.Current?.SetLeveler(list);
+    }
+
+    /// <summary>"Make the current level the norm": the median of the last 30 s becomes the target.</summary>
+    void NormClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not AppRowVm { MedianDb: { } median } row) return;
+        var list = Settings.Current.Leveler;
+        var i = list.FindIndex(x => x.App == row.App);
+        if (i < 0) return;
+        list[i] = list[i] with { TargetDb = Math.Round(median, 1) };
+        Settings.Save();
+        Engine.Current?.SetLeveler(list);
     }
 
     void Refresh()

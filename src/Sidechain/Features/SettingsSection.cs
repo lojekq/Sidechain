@@ -32,6 +32,14 @@ public static class SettingsSection
         var sound = new HyperlinkButton { Content = Loc.T("WinDuck.Open"), Padding = new(0), Margin = new(0, 4, 0, 0) };
         sound.Click += (_, _) => { if (!Args.Current.Demo) Process.Start(new ProcessStartInfo("control.exe", "mmsys.cpl,,3") { UseShellExecute = true }); };
 
+        var hotkey = new HotkeyBox { Hotkey = Settings.Current.PauseHotkey, Status = PauseHotkey.Apply() };
+        hotkey.Changed += (_, _) =>
+        {
+            Settings.Current.PauseHotkey = hotkey.Hotkey;
+            Settings.Save();
+            hotkey.Status = PauseHotkey.Apply();
+        };
+
         var restoreAll = new Button { Content = Loc.T("Restore.All") };
         restoreAll.Click += (_, _) => Engine.Current?.RestoreAllVolumes();
 
@@ -58,6 +66,11 @@ public static class SettingsSection
                 new InfoBar { Title = Loc.T("WinDuck.DiscordTitle"), Message = Loc.T("WinDuck.Discord"), IsOpen = true, IsClosable = false, Margin = new(0, 0, 0, 4) },
                 new CardControl
                 {
+                    Icon = new SymbolIcon(SymbolRegular.Keyboard24) { FontSize = 24 }, Margin = new(0, 0, 0, 4),
+                    Header = Loc.T("Hotkey.Pause"), Content = hotkey,
+                },
+                new CardControl
+                {
                     Icon = new SymbolIcon(SymbolRegular.ArrowUndo24) { FontSize = 24 }, Margin = new(0, 0, 0, 4),
                     Header = new StackPanel
                     {
@@ -74,5 +87,26 @@ public static class SettingsSection
         section.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush"); // a Page's default foreground is black
         if (Args.Current.Demo) section.Loaded += (_, _) => section.BringIntoView(); // the settings screenshot shows this part
         return section;
+    }
+}
+
+/// <summary>v1.0: one combination (00-shared §9.5, Ctrl+Alt+Shift+S) pauses until resumed, or resumes.</summary>
+public static class PauseHotkey
+{
+    const int Id = 1;
+
+    /// <summary>At start and after a change; --demo registers nothing (Shell.Hotkeys).</summary>
+    public static HotkeyStatus Apply()
+    {
+        if (Hotkey.Parse(Settings.Current.PauseHotkey) is { } h) return Hotkeys.Register(Id, h, Toggle);
+        Hotkeys.Unregister(Id);
+        return HotkeyStatus.Ok;
+    }
+
+    static void Toggle()
+    {
+        if (Engine.Current is not { } e) return;
+        if (e.Snapshot.State == EngineState.Paused) e.Resume();
+        else e.Pause(null);
     }
 }

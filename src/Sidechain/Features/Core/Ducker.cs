@@ -29,7 +29,9 @@ public sealed class Ducker
         public bool Canceled;                              // the user moved the volume: no ducking until the gate closes
     }
 
-    readonly Dictionary<string, double> lastAbove = [];    // rule id → time the trigger was last above the threshold
+    readonly Dictionary<string, double> lastAbove = [];    // rule id → time the gate was last held open by the trigger
+    readonly Dictionary<string, (double Since, double Last)> loud = []; // rule id → the current run of sound above the threshold
+    const double RunGapMs = 200;                            // dips between syllables shorter than this don't end a run
     public Dictionary<string, Target> Targets { get; } = [];
     public HashSet<string> ActiveRules { get; } = [];
 
@@ -43,13 +45,20 @@ public sealed class Ducker
         var want = new Dictionary<string, Rule>();
         foreach (var (r, peak, targets) in rules)
         {
-            if (Db.FromScalar(peak) >= r.ThresholdDb) lastAbove[r.Id] = nowMs;
+            if (Db.FromScalar(peak) >= r.ThresholdDb)
+            {
+                var since = loud.TryGetValue(r.Id, out var run) && nowMs - run.Last <= RunGapMs ? run.Since : nowMs;
+                loud[r.Id] = (since, nowMs);
+                if (nowMs - since >= r.MinSignalMs || lastAbove.TryGetValue(r.Id, out var open) && nowMs - open <= r.HoldMs)
+                    lastAbove[r.Id] = nowMs; // long enough, or the gate is open already
+            }
             if (!lastAbove.TryGetValue(r.Id, out var t) || nowMs - t > r.HoldMs) continue;
             ActiveRules.Add(r.Id);
             foreach (var app in targets)
                 if (!want.TryGetValue(app, out var w) || r.DepthDb > w.DepthDb) want[app] = r; // the deepest wins
         }
         foreach (var id in lastAbove.Keys.Where(id => rules.All(r => r.Rule.Id != id)).ToList()) lastAbove.Remove(id);
+        foreach (var id in loud.Keys.Where(id => rules.All(r => r.Rule.Id != id)).ToList()) loud.Remove(id);
 
         foreach (var app in want.Keys) Targets.TryAdd(app, new Target());
         foreach (var (app, t) in Targets.ToList())
@@ -80,6 +89,7 @@ public sealed class Ducker
     {
         Targets.Clear();
         lastAbove.Clear();
+        loud.Clear();
         ActiveRules.Clear();
     }
 }

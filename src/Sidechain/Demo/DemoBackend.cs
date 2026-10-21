@@ -24,7 +24,8 @@ public sealed class DemoBackend : IAudioBackend
     readonly List<AudioSession> sessions = [];
     readonly Dictionary<string, float> volumes = [];
     readonly List<AudioDevice> devices = [new("demo-phones", Loc.T("Demo.Phones")), new("demo-speakers", Loc.T("Demo.Speakers")), new("demo-dell", "DELL U2723QE (NVIDIA High Definition Audio)")];
-    string defaultId = "demo-phones";
+    readonly List<AudioDevice> mics = [new("demo-mic-phones", Loc.T("Demo.Mic")), new("demo-mic-camera", Loc.T("Demo.Camera"))];
+    string defaultId = "demo-phones", micId = "demo-mic-phones";
 
     public DemoBackend()
     {
@@ -57,9 +58,23 @@ public sealed class DemoBackend : IAudioBackend
 
     public float GetVolume(AudioSession s) => volumes[s.Key];
     public void SetVolume(AudioSession s, float volume) => volumes[s.Key] = volume;
-    public IReadOnlyList<AudioDevice> Devices() => devices;
-    public string? DefaultId() => defaultId;
-    public void SetDefault(string id, bool communications) => defaultId = id;
+    public IReadOnlyList<AudioDevice> Devices(bool capture = false) => capture ? mics : devices;
+    public string? DefaultId(bool capture = false) => capture ? micId : defaultId;
+    public void SetDefault(string id, bool communications)
+    {
+        if (mics.Any(m => m.Id == id)) micId = id;
+        else defaultId = id;
+    }
+
+    /// <summary>Chrome plays a loud ad: −12 dBFS before the volume, the leveler's norm is −20.</summary>
+    public ILevel? StartLevel(int pid) => sessions.FirstOrDefault(s => s.Pid == pid) is { } s ? new Level(this, s) : null;
+
+    sealed class Level(DemoBackend b, AudioSession s) : ILevel
+    {
+        public int Pid => s.Pid;
+        public double LevelDb => -12 + 1.5 * Math.Sin(Clock.Elapsed.TotalSeconds * 2.1) + Db.FromScalar(b.volumes[s.Key]); // after the session volume
+        public void Dispose() { }
+    }
     public (string Title, string? ExePath) Describe(AudioSession s) => (Apps.First(a => a.App == s.App).Title, null);
     public void Dispose() { }
 }

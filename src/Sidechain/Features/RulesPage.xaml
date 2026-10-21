@@ -67,7 +67,7 @@
                     </Grid>
 
                     <Expander x:Name="TimingBox" Header="{l:T Rules.Timing}" Margin="0,12,0,0">
-                        <UniformGrid Columns="3" Margin="0,8,0,0">
+                        <UniformGrid Columns="4" Margin="0,8,0,0">
                             <StackPanel Margin="0,0,12,0">
                                 <ui:TextBlock Text="{l:T Rules.Attack}" FontTypography="Caption" />
                                 <ui:NumberBox x:Name="AttackBox" Minimum="5" Maximum="2000" SmallChange="10" MaxDecimalPlaces="0" />
@@ -76,9 +76,13 @@
                                 <ui:TextBlock Text="{l:T Rules.Hold}" FontTypography="Caption" />
                                 <ui:NumberBox x:Name="HoldBox" Minimum="0" Maximum="5000" SmallChange="50" MaxDecimalPlaces="0" />
                             </StackPanel>
-                            <StackPanel>
+                            <StackPanel Margin="0,0,12,0">
                                 <ui:TextBlock Text="{l:T Rules.Release}" FontTypography="Caption" />
                                 <ui:NumberBox x:Name="ReleaseBox" Minimum="20" Maximum="10000" SmallChange="50" MaxDecimalPlaces="0" />
+                            </StackPanel>
+                            <StackPanel ToolTip="{l:T Rules.MinSignal.Note}">
+                                <ui:TextBlock Text="{l:T Rules.MinSignal}" FontTypography="Caption" />
+                                <ui:NumberBox x:Name="MinSignalBox" Minimum="0" Maximum="5000" SmallChange="50" MaxDecimalPlaces="0" />
                             </StackPanel>
                         </UniformGrid>
                     </Expander>

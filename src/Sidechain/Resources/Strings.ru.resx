@@ -56,7 +56,7 @@
   <data name="Live.Empty" xml:space="preserve"><value>Сейчас ни одно приложение не выводит звук.</value></data>
   <data name="Live.Level" xml:space="preserve"><value>Уровень</value></data>
   <data name="Live.Volume" xml:space="preserve"><value>Громкость</value></data>
-  <data name="Live.Gain" xml:space="preserve"><value>Приглушение</value></data>
+  <data name="Live.Gain" xml:space="preserve"><value>Усиление</value></data>
   <data name="Live.Streams" xml:space="preserve"><value>потоков: {0}</value></data>
   <data name="Role.None" xml:space="preserve"><value>—</value></data>
   <data name="Role.Trigger" xml:space="preserve"><value>Триггер</value></data>
@@ -137,6 +137,23 @@
   <data name="Rules.Err.NoTargets" xml:space="preserve"><value>Добавьте хотя бы одну цель.</value></data>
   <data name="Rules.Err.Both" xml:space="preserve"><value>{0} не может быть одновременно триггером и целью.</value></data>
   <data name="Rules.Err.Loop" xml:space="preserve"><value>{0} — триггер в правиле {1}, поэтому не может быть целью в правиле {2}.</value></data>
+  <data name="Hotkey.Pause" xml:space="preserve"><value>Пауза и возобновление</value></data>
+  <data name="Live.Norm" xml:space="preserve"><value>Сделать текущий уровень нормой (медиана за последние 30 с)</value></data>
+  <data name="Live.LevelOn" xml:space="preserve"><value>Выравнивать это приложение: убавлять громкие места, например рекламу</value></data>
+  <data name="Live.LevelOff" xml:space="preserve"><value>Не выравнивать это приложение</value></data>
+  <data name="Live.Leveling" xml:space="preserve"><value>выравнивание {0}</value></data>
+  <data name="Live.LevelMax" xml:space="preserve"><value>Выравнивать можно не больше {0} приложений сразу.</value></data>
+  <data name="Rules.MinSignal" xml:space="preserve"><value>Мин. звук, мс</value></data>
+  <data name="Rules.MinSignal.Note" xml:space="preserve"><value>Звуки короче этого, например уведомления, не приглушают</value></data>
+  <data name="Rules.Template.Empty" xml:space="preserve"><value>Пустое правило</value></data>
+  <data name="Rules.Template.Music" xml:space="preserve"><value>Discord → музыка и браузер</value></data>
+  <data name="Rules.Template.Calls" xml:space="preserve"><value>Звонки → всё</value></data>
+  <data name="Rules.Template.Game" xml:space="preserve"><value>Discord → игра −6 дБ</value></data>
+  <data name="Devices.Mic" xml:space="preserve"><value>Микрофон</value></data>
+  <data name="Devices.MicPin" xml:space="preserve"><value>Закреплять микрофон</value></data>
+  <data name="Devices.MicPin.Note" xml:space="preserve"><value>Веб-камера или новая гарнитура не станут микрофоном по умолчанию сами.</value></data>
+  <data name="Demo.Mic" xml:space="preserve"><value>Микрофон (Arctis Nova 7)</value></data>
+  <data name="Demo.Camera" xml:space="preserve"><value>Микрофон (USB Camera)</value></data>
   <data name="Demo.Phones" xml:space="preserve"><value>Наушники (Arctis Nova 7)</value></data>
   <data name="Demo.Speakers" xml:space="preserve"><value>Динамики (Realtek(R) Audio)</value></data>
 </root>

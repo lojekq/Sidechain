@@ -18,8 +18,11 @@ public sealed class CoreAudioBackend : IAudioBackend
     readonly Dictionary<int, string> apps = [];                       // pid → app
     readonly Dictionary<string, (string, string?)> titles = [];       // app → title, exe
 
-    public IReadOnlyList<AudioDevice> Devices()
+    readonly Dictionary<string, string> micNames = [];
+
+    public IReadOnlyList<AudioDevice> Devices(bool capture = false)
     {
+        if (capture) return Microphones();
         var seen = new HashSet<string>();
         foreach (var d in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
         {
@@ -33,6 +36,19 @@ public sealed class CoreAudioBackend : IAudioBackend
             devices.Remove(id);
         }
         return devices.Select(kv => new AudioDevice(kv.Key, kv.Value.Name)).ToList();
+    }
+
+    /// <summary>Microphones are only listed, never kept: no sessions live on them for Sidechain.</summary>
+    IReadOnlyList<AudioDevice> Microphones()
+    {
+        var list = new List<AudioDevice>();
+        foreach (var d in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
+            using (d)
+            {
+                if (!micNames.TryGetValue(d.ID, out var name)) micNames[d.ID] = name = d.FriendlyName;
+                list.Add(new AudioDevice(d.ID, name));
+            }
+        return list;
     }
 
     public IReadOnlyList<AudioSession> Enumerate()
@@ -85,8 +101,10 @@ public sealed class CoreAudioBackend : IAudioBackend
     public float GetVolume(AudioSession s) => Session(s).SimpleAudioVolume.Volume;
     public void SetVolume(AudioSession s, float volume) => Session(s).SimpleAudioVolume.Volume = Math.Clamp(volume, 0, 1);
 
-    public string? DefaultId() =>
-        enumerator.TryGetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia, out var d) ? Take(d) : null;
+    public string? DefaultId(bool capture = false) =>
+        enumerator.TryGetDefaultAudioEndpoint(capture ? DataFlow.Capture : DataFlow.Render, Role.Multimedia, out var d) ? Take(d) : null;
+
+    public ILevel? StartLevel(int pid) => LevelMeter.Start(pid);
 
     static string Take(MMDevice d)
     {

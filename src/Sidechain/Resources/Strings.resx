@@ -56,7 +56,7 @@ Open the folder?</value></data>
   <data name="Live.Empty" xml:space="preserve"><value>No app is playing sound right now.</value></data>
   <data name="Live.Level" xml:space="preserve"><value>Level</value></data>
   <data name="Live.Volume" xml:space="preserve"><value>Volume</value></data>
-  <data name="Live.Gain" xml:space="preserve"><value>Ducking</value></data>
+  <data name="Live.Gain" xml:space="preserve"><value>Gain</value></data>
   <data name="Live.Streams" xml:space="preserve"><value>{0} streams</value></data>
   <data name="Role.None" xml:space="preserve"><value>—</value></data>
   <data name="Role.Trigger" xml:space="preserve"><value>Trigger</value></data>
@@ -137,6 +137,23 @@ Open the folder?</value></data>
   <data name="Rules.Err.NoTargets" xml:space="preserve"><value>Add at least one target.</value></data>
   <data name="Rules.Err.Both" xml:space="preserve"><value>{0} can't be a trigger and a target at once.</value></data>
   <data name="Rules.Err.Loop" xml:space="preserve"><value>{0} is a trigger in rule {1}, so it can't be a target in rule {2}.</value></data>
+  <data name="Hotkey.Pause" xml:space="preserve"><value>Pause or resume</value></data>
+  <data name="Live.Norm" xml:space="preserve"><value>Make the current level the norm (median of the last 30 s)</value></data>
+  <data name="Live.LevelOn" xml:space="preserve"><value>Level this app: turn down loud parts, like ads</value></data>
+  <data name="Live.LevelOff" xml:space="preserve"><value>Stop leveling this app</value></data>
+  <data name="Live.Leveling" xml:space="preserve"><value>leveling {0}</value></data>
+  <data name="Live.LevelMax" xml:space="preserve"><value>Up to {0} apps can be leveled at once.</value></data>
+  <data name="Rules.MinSignal" xml:space="preserve"><value>Min. sound, ms</value></data>
+  <data name="Rules.MinSignal.Note" xml:space="preserve"><value>Shorter sounds, like a notification, don't duck</value></data>
+  <data name="Rules.Template.Empty" xml:space="preserve"><value>Empty rule</value></data>
+  <data name="Rules.Template.Music" xml:space="preserve"><value>Discord → music and browser</value></data>
+  <data name="Rules.Template.Calls" xml:space="preserve"><value>Calls → everything</value></data>
+  <data name="Rules.Template.Game" xml:space="preserve"><value>Discord → game −6 dB</value></data>
+  <data name="Devices.Mic" xml:space="preserve"><value>Microphone</value></data>
+  <data name="Devices.MicPin" xml:space="preserve"><value>Pin the microphone</value></data>
+  <data name="Devices.MicPin.Note" xml:space="preserve"><value>A webcam or a new headset won't become the default microphone by itself.</value></data>
+  <data name="Demo.Mic" xml:space="preserve"><value>Microphone (Arctis Nova 7)</value></data>
+  <data name="Demo.Camera" xml:space="preserve"><value>Microphone (USB Camera)</value></data>
   <data name="Demo.Phones" xml:space="preserve"><value>Headphones (Arctis Nova 7)</value></data>
   <data name="Demo.Speakers" xml:space="preserve"><value>Speakers (Realtek(R) Audio)</value></data>
 </root>

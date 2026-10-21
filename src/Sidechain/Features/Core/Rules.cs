@@ -12,6 +12,7 @@ public sealed class Rule
     public double AttackMs { get; set; } = 80;
     public double HoldMs { get; set; } = 400;
     public double ReleaseMs { get; set; } = 600;
+    public double MinSignalMs { get; set; }                  // v1.0: shorter sounds (a Discord notification) don't duck
 
     public Rule Clone()
     {

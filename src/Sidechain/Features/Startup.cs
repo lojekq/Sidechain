@@ -21,17 +21,20 @@ public static class Startup
         var ui = Dispatcher.CurrentDispatcher;
 
         engine.AutoSwitched += e => ui.BeginInvoke(() => Tray.Notify(AppInfo.DisplayName, string.Format(Loc.T("Pin.Switched"), e.To.Name), "devices"));
-        engine.PinWar += () => ui.BeginInvoke(() =>
+        engine.PinWar += mic => ui.BeginInvoke(() =>
         {
-            s.Pin.Enabled = false;
+            if (mic) s.Pin.Mic.Enabled = false;
+            else s.Pin.Enabled = false;
             Settings.Save();
             Tray.Notify(AppInfo.DisplayName, Loc.T("Pin.War"), "devices");
         });
         engine.PinFailed += () => ui.BeginInvoke(() => Tray.Notify(AppInfo.DisplayName, Loc.T("Pin.Broken"), "devices"));
-        engine.FirstDefault += d => ui.BeginInvoke(() =>
+        engine.FirstDefault += (d, mic) => ui.BeginInvoke(() =>
         {
-            if (s.Pin.Priority.Count == 0) s.Pin.Priority.Add(d);
-            s.Pin.Seeded = true;
+            var list = mic ? s.Pin.Mic.Priority : s.Pin.Priority;
+            if (list.Count == 0) list.Add(d);
+            if (mic) s.Pin.Mic.Seeded = true;
+            else s.Pin.Seeded = true;
             Settings.Save();
             engine.SetPin(s.Pin);
         });
@@ -44,7 +47,8 @@ public static class Startup
                 else if (e.Mode == PowerModes.Resume) engine.Resumed();
             };
         if (demo) DemoData.Fill(engine);
-        engine.Start(s.Rules, s.Pin);
+        engine.Start(s.Rules, s.Pin, s.Leveler);
+        PauseHotkey.Apply();
         SettingsPage.AppSection = SettingsSection.Create;
     }
 }

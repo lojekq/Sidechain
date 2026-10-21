@@ -25,10 +25,21 @@ sealed class FakeBackend : IAudioBackend
     public float Peak(AudioSession s) => PeakOf[s.Key];
     public float GetVolume(AudioSession s) => Volume[s.Key];
     public void SetVolume(AudioSession s, float v) => Volume[s.Key] = v;
-    public IReadOnlyList<AudioDevice> Devices() => [new("dev", "Headphones")];
-    public string? DefaultId() => Default;
+    public readonly Dictionary<int, double> SourceDb = []; // pid → loudness before the volume, for the leveler
+
+    public IReadOnlyList<AudioDevice> Devices(bool capture = false) => capture ? [] : [new("dev", "Headphones")];
+    public string? DefaultId(bool capture = false) => capture ? null : Default;
     public void SetDefault(string id, bool communications) => Default = id;
     public (string Title, string? ExePath) Describe(AudioSession s) => (s.App, null);
+    public ILevel? StartLevel(int pid) => new Level(this, pid);
+
+    /// <summary>Like process loopback: what plays after the session volume.</summary>
+    sealed class Level(FakeBackend b, int pid) : ILevel
+    {
+        public int Pid => pid;
+        public double LevelDb => b.SourceDb.TryGetValue(pid, out var db) ? db + Db.FromScalar(b.Volume[b.Sessions.First(s => s.Pid == pid).Key]) : double.NaN;
+        public void Dispose() { }
+    }
     public void Dispose() { }
 }
 
@@ -202,6 +213,71 @@ public class SidechainTests
         Assert.IsEmpty(journal.Entries);
         run(500); // paused: Discord still talks, nothing changes
         Assert.IsTrue(chrome.All(s => audio.Volume[s.Key] == 0.6f));
+    }
+
+    [TestMethod]
+    public void ShortSoundsDontDuckWithMinSignal()
+    {
+        var r = Rule("discord", "spotify");
+        r.MinSignalMs = 300;
+        var d = new Ducker();
+        double now = 0;
+        void Run(double ms, float peak) { for (var end = now + ms; now < end;) { now += 25; d.Step(now, 25, [In(r, peak)]); } }
+        Run(150, 1);   // a notification ping
+        Run(1000, 0);
+        Assert.AreEqual(0, d.Gain("spotify"));
+        Run(250, 1);   // speech with a short dip
+        Run(100, 0);
+        Run(250, 1);
+        Assert.AreEqual(-12, d.Gain("spotify"));
+    }
+
+    // ---- Leveler (v1.0) ----
+
+    [TestMethod]
+    public void LevelerTurnsDownSlowlyAndComesBackSlower()
+    {
+        var l = new Leveler();
+        double now = 0;
+        void Run(double s, double db) { for (var end = now + s * 1000; now < end;) { now += 25; l.Step(now, 25, db, -20); } }
+        Run(1, -10);                       // an ad 10 dB over the norm: 6 dB/s down
+        Assert.AreEqual(-6, l.GainDb, 0.01);
+        Run(1, -10);
+        Assert.AreEqual(-10, l.GainDb, 0.01);
+        Run(2, double.NaN);                // a pause keeps the gain
+        Assert.AreEqual(-10, l.GainDb, 0.01);
+        Run(5, -20);                       // back to normal: 1 dB/s up
+        Assert.AreEqual(-5, l.GainDb, 0.01);
+        Run(3, 0);                         // far too loud: 12 dB at most
+        Assert.AreEqual(-12, l.GainDb, 0.01);
+    }
+
+    [TestMethod]
+    public void NormIsTheMedianOfThirtySeconds()
+    {
+        var l = new Leveler();
+        for (var t = 0; t < 40_000; t += 100) l.Step(t, 100, t < 10_000 ? -5 : t % 3000 == 0 ? -60 : -22, -20); // first 10 s fall out, silence is skipped
+        Assert.AreEqual(-22, l.Median());
+    }
+
+    [TestMethod]
+    public void EngineLevelsByTheSourceNotByItsOwnGain()
+    {
+        var journal = RestoreJournal.Load(Path.Combine(NewDir(), "restore.json"), DateTime.Now);
+        var audio = new FakeBackend();
+        var chrome = audio.Add("chrome", 0.5f);
+        audio.SourceDb[chrome.Pid] = -12;  // 8 dB over the −20 norm
+        var (engine, _, run) = Start(journal, audio);
+        engine.SetLeveler([new LevelerEntry("chrome", -20)]);
+        run(4000);
+        Assert.AreEqual(Db.FromScalar(0.5) - 8, Db.FromScalar(audio.Volume[chrome.Key]), 0.3); // not 8 dB more each round
+        audio.SourceDb.Remove(chrome.Pid);
+        run(1000);                          // silent: stays
+        Assert.AreEqual(Db.FromScalar(0.5) - 8, Db.FromScalar(audio.Volume[chrome.Key]), 0.3);
+        engine.Pause(null);
+        run(100);
+        Assert.AreEqual(0.5f, audio.Volume[chrome.Key]);
+        Assert.IsEmpty(journal.Entries);
     }
 
     // ---- RestoreJournal ----

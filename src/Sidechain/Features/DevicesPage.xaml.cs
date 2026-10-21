@@ -24,6 +24,8 @@ public partial class DevicesPage
         PinSwitch.IsChecked = Pin.Enabled;
         CommBox.IsChecked = Pin.AlsoCommunications;
         PinSwitch.Click += (_, _) => TrayMenu.SetPin(PinSwitch.IsChecked == true);
+        MicSwitch.IsChecked = Pin.Mic.Enabled;
+        MicSwitch.Click += (_, _) => { Pin.Mic.Enabled = MicSwitch.IsChecked == true; Changed(); };
         CommBox.Click += (_, _) => { Pin.AlsoCommunications = CommBox.IsChecked == true; Changed(); };
         UndoButton.Click += (_, _) => { Engine.Current?.UndoLastAuto(); UndoBar.IsOpen = false; };
         MainButton.Click += (_, _) =>
@@ -51,6 +53,7 @@ public partial class DevicesPage
     {
         var s = Engine.Current?.Snapshot ?? Snapshot.Empty;
         PinSwitch.IsChecked = Pin.Enabled;
+        MicSwitch.IsChecked = Pin.Mic.Enabled;
         if (s.LastAuto != offered) // once per automatic switch; closed by hand stays closed
         {
             offered = s.LastAuto;
@@ -65,31 +68,12 @@ public partial class DevicesPage
         ProblemBar.IsOpen = s.PinBroken;
         ProblemBar.Title = Loc.T("Pin.Broken");
 
-        var key = string.Join("|", s.Devices.Select(d => d.Id + d.Name)) + "#" + s.DefaultId + "#" + string.Join("|", Pin.Priority.Select(p => p.Id)) + "#" + s.PinLog.Count;
+        var key = string.Join("|", s.Devices.Concat(s.Mics).Select(d => d.Id + d.Name)) + "#" + s.DefaultId + s.MicDefaultId + "#" +
+                  string.Join("|", Pin.Priority.Concat(Pin.Mic.Priority).Select(p => p.Id)) + "#" + s.PinLog.Count;
         if (key == shown) return;
         shown = key;
-
-        PriorityList.Children.Clear();
-        for (var i = 0; i < Pin.Priority.Count; i++)
-        {
-            var index = i;
-            var p = Pin.Priority[i];
-            var active = PinPolicy.Best([p], s.Devices);
-            var state = active is null ? Loc.T("Devices.Missing") : active.Id == s.DefaultId ? Loc.T("Devices.Default") : Loc.T("Devices.Active");
-            PriorityList.Children.Add(Row($"{i + 1}.  {p.Name}", state, active is not null,
-                Icon(SymbolRegular.ArrowUp24, "Devices.Up", index > 0, () => Swap(index, index - 1)),
-                Icon(SymbolRegular.ArrowDown24, "Devices.Down", index < Pin.Priority.Count - 1, () => Swap(index, index + 1)),
-                Icon(SymbolRegular.Delete24, "Devices.Remove", true, () => { Pin.Priority.RemoveAt(index); Changed(); })));
-        }
-
-        OtherList.Children.Clear();
-        foreach (var d in s.Devices.Where(d => PinPolicy.Best(Pin.Priority, [d]) is null))
-        {
-            var add = new Button { Content = Loc.T("Devices.Add"), Icon = new SymbolIcon(SymbolRegular.Add24) };
-            add.Click += (_, _) => { Pin.Priority.Add(d); Changed(); };
-            OtherList.Children.Add(Row(d.Name, d.Id == s.DefaultId ? Loc.T("Devices.Default") : Loc.T("Devices.Active"), true, add));
-        }
-        OthersTitle.Visibility = OtherList.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        Render(PriorityList, OtherList, OthersTitle, Pin.Priority, s.Devices, s.DefaultId);
+        Render(MicPriorityList, MicOtherList, MicOthersTitle, Pin.Mic.Priority, s.Mics, s.MicDefaultId);
 
         LogList.Children.Clear();
         foreach (var e in s.PinLog)
@@ -100,9 +84,35 @@ public partial class DevicesPage
         LogEmpty.Visibility = s.PinLog.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    void Swap(int a, int b)
+    /// <summary>One direction: its priority list with ↑ ↓ ✕, then the active devices not on it with "Add".</summary>
+    void Render(StackPanel priorityPanel, StackPanel otherPanel, FrameworkElement othersTitle, List<AudioDevice> priority, IReadOnlyList<AudioDevice> devices, string? defaultId)
     {
-        (Pin.Priority[a], Pin.Priority[b]) = (Pin.Priority[b], Pin.Priority[a]);
+        priorityPanel.Children.Clear();
+        for (var i = 0; i < priority.Count; i++)
+        {
+            var index = i;
+            var p = priority[i];
+            var active = PinPolicy.Best([p], devices);
+            var state = active is null ? Loc.T("Devices.Missing") : active.Id == defaultId ? Loc.T("Devices.Default") : Loc.T("Devices.Active");
+            priorityPanel.Children.Add(Row($"{i + 1}.  {p.Name}", state, active is not null,
+                Icon(SymbolRegular.ArrowUp24, "Devices.Up", index > 0, () => Swap(priority, index, index - 1)),
+                Icon(SymbolRegular.ArrowDown24, "Devices.Down", index < priority.Count - 1, () => Swap(priority, index, index + 1)),
+                Icon(SymbolRegular.Delete24, "Devices.Remove", true, () => { priority.RemoveAt(index); Changed(); })));
+        }
+
+        otherPanel.Children.Clear();
+        foreach (var d in devices.Where(d => PinPolicy.Best(priority, [d]) is null))
+        {
+            var add = new Button { Content = Loc.T("Devices.Add"), Icon = new SymbolIcon(SymbolRegular.Add24) };
+            add.Click += (_, _) => { priority.Add(d); Changed(); };
+            otherPanel.Children.Add(Row(d.Name, d.Id == defaultId ? Loc.T("Devices.Default") : Loc.T("Devices.Active"), true, add));
+        }
+        othersTitle.Visibility = otherPanel.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    void Swap(List<AudioDevice> list, int a, int b)
+    {
+        (list[a], list[b]) = (list[b], list[a]);
         Changed();
     }
 

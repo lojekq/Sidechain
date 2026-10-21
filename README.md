@@ -29,8 +29,9 @@ Sidechain only changes the volume of other apps, so the sound itself never passe
 
 - **Ducks by real sound levels** — threshold, depth in dB, attack, hold and release; any app can be a trigger or a target, or "all others".
 - **Whole apps, your volume first** — a browser or a multi-process app counts as one app; ducking is relative to your own volume, and your moves in the mixer win.
+- **Leveler** — a browser with a loud ad gets turned down slowly and only down; "make this level the norm" in one click.
 - **Safe** — volumes come back on exit, sleep, a crash or the next start; one button restores everything.
-- **Output device pinning** — an HDMI monitor or a new device can't steal the sound; your own choice in Windows is never undone.
+- **Device pinning** — an HDMI monitor, a webcam or a new headset can't steal the output or the microphone; your own choice in Windows is never undone.
 - **Fixes the Windows call ducking clash** — one click turns off the built-in "reduce other sounds during calls".
 - **Light** — tray app, no admin rights, no telemetry, no virtual audio device and no latency; about 0 % CPU.
 
@@ -43,6 +44,8 @@ Sidechain only changes the volume of other apps, so the sound itself never passe
 Sidechain uses Windows Core Audio sessions. 40 times a second it reads the peak meters of the trigger apps,
 keeps a gate with a hold, and moves the session volume of the targets in decibels from your own volume.
 Windows remembers every app's volume forever, so a restore journal keeps your levels until they are back.
+The leveler measures the loudness (RMS) of a chosen app through Windows process loopback and turns it down 6 dB/s, up 1 dB/s, 12 dB at most.
+It is a slow automatic volume, not a limiter: the first half second of a loud ad is still loud.
 
 ## Screenshots
 
@@ -72,8 +75,12 @@ The first rule is ready: Discord and Telegram duck Spotify, browsers and players
 |---|---|---|
 | Rules | Discord, Telegram → Spotify, Chrome, Edge, Firefox, Yandex Browser, Opera, Brave, VLC, AIMP, foobar2000 | When a trigger is louder than the threshold (−45 dBFS), the targets go down by the depth (12 dB) |
 | Timing | attack 80 ms, hold 400 ms, release 600 ms | How fast the targets go down, how long pauses between words are bridged, how fast they come back |
+| Min. sound | 0 ms | Shorter sounds of a trigger (a Discord notification) don't duck |
+| Leveler | off | The equalizer button on a row of the Now page; norm −20 dBFS until you press the pin button next to it; 3 apps at most |
 | Pin the output device | on, with the device that was default at the first start | Switches back when a device that just appeared (HDMI monitor, new headset) takes the default |
 | Also for calls | off | Pins the Communications device too |
+| Pin the microphone | on, with the microphone that was default at the first start | The same for the microphone: a webcam won't become the default one |
+| Pause or resume | `Ctrl+Alt+Shift+S` | A global hotkey; clear it in Settings |
 | Windows call ducking | not touched | **Turn off** sets Windows to "Do nothing" during calls; **Restore as it was** brings your value back |
 | Language, theme | Windows | English or Russian (after a restart), light or dark |
 | Start with Windows | off | Starts minimized to the tray |
@@ -93,7 +100,7 @@ Smart App Control, if it is on, blocks unsigned files with no way to allow one; 
 
 <details><summary>My antivirus flags it</summary>
 
-It is a false positive: the app has no installer, no packer and no obfuscation. Please report it to your antivirus vendor
+It is a false positive: the app has no installer, no packer and no obfuscation. The leveler's process loopback may look like audio capture to a heuristic; see Privacy. Please report it to your antivirus vendor
 and open an issue with the detection name and the SHA256 of the file.
 </details>
 
@@ -123,7 +130,8 @@ About → **Remove data and autostart**, then delete the exe. Volumes are restor
 ## Privacy
 
 No telemetry. The only network request is the update check: `GET https://api.github.com/repos/lojekq/Sidechain/releases/latest` once a day; turn it off in Settings.
-Sidechain does not record or capture sound: it reads the level meters Windows provides and sets session volumes.
+Ducking reads only the level meters Windows provides and sets session volumes.
+The leveler listens to the apps you choose through Windows process loopback; the samples stay in memory for the loudness sum and are never recorded, saved or sent.
 Logs contain no window titles, paths or device names.
 
 ## Build from source

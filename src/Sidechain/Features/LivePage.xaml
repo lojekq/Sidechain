@@ -33,6 +33,7 @@
                                     <ColumnDefinition Width="170" />
                                     <ColumnDefinition Width="90" />
                                     <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="92" />
                                 </Grid.ColumnDefinitions>
                                 <Grid Width="28" Height="28" HorizontalAlignment="Left">
                                     <Border CornerRadius="14" Background="{Binding Badge}" Visibility="{Binding GlyphVisibility}">
@@ -66,6 +67,12 @@
                                         <Border CornerRadius="3" HorizontalAlignment="Left" Width="{Binding GainWidth}"
                                                 Background="{DynamicResource AccentFillColorDefaultBrush}" />
                                     </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="6" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <ui:Button Icon="{ui:SymbolIcon Pin24}" ToolTip="{l:T Live.Norm}" Visibility="{Binding NormVisibility}"
+                                               Click="NormClick" Margin="0,0,4,0" />
+                                    <ui:Button Icon="{ui:SymbolIcon DeviceEq24}" ToolTip="{Binding LevelTip}" Appearance="{Binding LevelAppearance}"
+                                               Click="LevelClick" />
                                 </StackPanel>
                             </Grid>
                         </Border>

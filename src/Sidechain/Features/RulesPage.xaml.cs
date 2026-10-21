@@ -25,7 +25,7 @@ public partial class RulesPage
     {
         InitializeComponent();
         BuildList();
-        AddButton.Click += (_, _) => Edit(-1);
+        AddButton.Click += (_, _) => Templates().IsOpen = true;
         TriggerAdd.Click += (_, _) => AddApp(TriggerPick, editing!.Triggers);
         TargetAdd.Click += (_, _) => AddApp(TargetPick, editing!.Targets);
         AllOthersAdd.Click += (_, _) => { if (!editing!.Targets.Contains(Rules.AllOthers)) editing.Targets.Add(Rules.AllOthers); ShowApps(); };
@@ -117,17 +117,35 @@ public partial class RulesPage
         Engine.Current?.SetRules(RuleSet);
     }
 
-    void Edit(int index)
+    /// <summary>v1.0: "Add rule" starts empty or from a template; nothing is saved until Save.</summary>
+    ContextMenu Templates()
+    {
+        var menu = new ContextMenu { PlacementTarget = AddButton, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+        void Item(string key, Func<Rule> make)
+        {
+            var item = new System.Windows.Controls.MenuItem { Header = Loc.T(key) };
+            item.Click += (_, _) => Edit(-1, make());
+            menu.Items.Add(item);
+        }
+        Item("Rules.Template.Empty", () => new Rule());
+        Item("Rules.Template.Music", () => new Rule { Triggers = ["discord"], Targets = Rules.Default()[0].Targets });
+        Item("Rules.Template.Calls", () => new Rule { Triggers = ["discord", "telegram", "ms-teams", "zoom"], Targets = [Rules.AllOthers] });
+        Item("Rules.Template.Game", () => new Rule { Triggers = ["discord"], Targets = ["dota2", "cs2"], DepthDb = 6 });
+        return menu;
+    }
+
+    void Edit(int index, Rule? template = null)
     {
         if (index >= RuleSet.Count) return;
         editingIndex = index;
-        editing = index < 0 ? new Rule() : RuleSet[index].Clone();
+        editing = index < 0 ? template ?? new Rule() : RuleSet[index].Clone();
         EditorTitle.Text = index < 0 ? Loc.T("Rules.New") : string.Format(Loc.T("Rules.Name"), index + 1);
         ThresholdSlider.Value = editing.ThresholdDb;
         DepthSlider.Value = editing.DepthDb;
         AttackBox.Value = editing.AttackMs;
         HoldBox.Value = editing.HoldMs;
         ReleaseBox.Value = editing.ReleaseMs;
+        MinSignalBox.Value = editing.MinSignalMs;
         ShowError(TriggerError, "");
         ShowError(TargetError, "");
         ShowApps();
@@ -206,6 +224,7 @@ public partial class RulesPage
         r.AttackMs = AttackBox.Value ?? r.AttackMs;
         r.HoldMs = HoldBox.Value ?? r.HoldMs;
         r.ReleaseMs = ReleaseBox.Value ?? r.ReleaseMs;
+        r.MinSignalMs = MinSignalBox.Value ?? r.MinSignalMs;
         r.DepthDb = Math.Clamp(r.DepthDb, Rules.MinDepth, Rules.MaxDepth);
         var candidate = RuleSet.Select(x => x.Clone()).ToList();
         var i = editingIndex < 0 ? candidate.Count : editingIndex;
