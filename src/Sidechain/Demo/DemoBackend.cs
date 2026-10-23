@@ -26,6 +26,7 @@ public sealed class DemoBackend : IAudioBackend
     readonly List<AudioDevice> devices = [new("demo-phones", Loc.T("Demo.Phones")), new("demo-speakers", Loc.T("Demo.Speakers")), new("demo-dell", "DELL U2723QE (NVIDIA High Definition Audio)")];
     readonly List<AudioDevice> mics = [new("demo-mic-phones", Loc.T("Demo.Mic")), new("demo-mic-camera", Loc.T("Demo.Camera"))];
     string defaultId = "demo-phones", micId = "demo-mic-phones";
+    readonly Dictionary<string, float> masters = new() { ["demo-phones"] = -10, ["demo-speakers"] = -20, ["demo-dell"] = -6 };
 
     public DemoBackend()
     {
@@ -76,5 +77,7 @@ public sealed class DemoBackend : IAudioBackend
         public void Dispose() { }
     }
     public (string Title, string? ExePath) Describe(AudioSession s) => (Apps.First(a => a.App == s.App).Title, null);
+    public MasterVolume? Master(string deviceId) => masters.TryGetValue(deviceId, out var db) ? new MasterVolume(db, -65.25f, 0) : null;
+    public void SetMaster(string deviceId, float db) => masters[deviceId] = Math.Clamp(db, -65.25f, 0);
     public void Dispose() { }
 }

@@ -13,6 +13,7 @@ public sealed class Rule
     public double HoldMs { get; set; } = 400;
     public double ReleaseMs { get; set; } = 600;
     public double MinSignalMs { get; set; }                  // v1.0: shorter sounds (a Discord notification) don't duck
+    public double BoostTriggersDb { get; set; }              // v1.1: the triggers get louder while they sound, 0–12 dB
 
     public Rule Clone()
     {

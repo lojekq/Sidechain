@@ -30,6 +30,7 @@ Sidechain only changes the volume of other apps, so the sound itself never passe
 - **Ducks by real sound levels** — threshold, depth in dB, attack, hold and release; any app can be a trigger or a target, or "all others".
 - **Whole apps, your volume first** — a browser or a multi-process app counts as one app; ducking is relative to your own volume, and your moves in the mixer win.
 - **Leveler** — a browser with a loud ad gets turned down slowly and only down; "make this level the norm" in one click.
+- **Boost** — a quiet app gets louder by hand (up to +20 dB), automatically (quiet parts lifted up to +12 dB) or while it talks in a rule; the room left is always shown.
 - **Safe** — volumes come back on exit, sleep, a crash or the next start; one button restores everything.
 - **Device pinning** — an HDMI monitor, a webcam or a new headset can't steal the output or the microphone; your own choice in Windows is never undone.
 - **Fixes the Windows call ducking clash** — one click turns off the built-in "reduce other sounds during calls".
@@ -46,6 +47,10 @@ keeps a gate with a hold, and moves the session volume of the targets in decibel
 Windows remembers every app's volume forever, so a restore journal keeps your levels until they are back.
 The leveler measures the loudness (RMS) of a chosen app through Windows process loopback and turns it down 6 dB/s, up 1 dB/s, 12 dB at most.
 It is a slow automatic volume, not a limiter: the first half second of a loud ad is still loud.
+
+Windows plays no app above 100 % of its own volume. To boost one, Sidechain first uses what that app has left to 100 %,
+then raises the device master volume and turns every other app on that device (system sounds too) down by as much, so only that app gets louder.
+At 100 % master volume there is no more room: only a virtual audio device could go further, and Sidechain installs none. The journal puts the master back too.
 
 ## Screenshots
 
@@ -77,6 +82,8 @@ The first rule is ready: Discord and Telegram duck Spotify, browsers and players
 | Rules | Discord, Telegram → Spotify, Chrome, Edge, Firefox, Yandex Browser, Opera, Brave, VLC, AIMP, foobar2000 | When a trigger is louder than the threshold (−45 dBFS), the targets go down by the depth (12 dB) |
 | Timing | attack 80 ms, hold 400 ms, release 600 ms | How fast the targets go down, how long pauses between words are bridged, how fast they come back |
 | Min. sound | 0 ms | Shorter sounds of a trigger (a Discord notification) don't duck |
+| Boost triggers | off | In a rule, 0 to +12 dB: the triggers that sound get louder while the rule ducks |
+| Boost | off | The gauge button on a row of the Now page: 0 to +20 dB by hand, or quiet parts lifted up to +12 dB automatically; shows the room left |
 | Leveler | off | The equalizer button on a row of the Now page; norm −20 dBFS until you press the pin button next to it; 3 apps at most |
 | Pin the output device | on, with the device that was default at the first start | Switches back when a device that just appeared (HDMI monitor, new headset) takes the default |
 | Also for calls | off | Pins the Communications device too |
@@ -116,6 +123,13 @@ On a normal exit, sleep or sign-out the volumes come back at once.
 
 Windows and Discord can duck too. Turn off the Windows one in Settings (Windows applies it after a sign-out or a restart),
 and turn off **Attenuation** in Discord → Voice & Video.
+</details>
+
+<details><summary>Can it make an app louder than 100 %?</summary>
+
+Only by the room the device master volume has left. Sidechain raises the master and turns everything else down by as much,
+so the other apps sound the same and only the boosted one is louder; the master moves in the Windows volume flyout too.
+When the master is at 100 %, the Now page says so: going further would need a virtual audio device or an equalizer driver, which Sidechain does not install.
 </details>
 
 <details><summary>Can it duck one browser tab, or a game's voice chat apart from the game?</summary>

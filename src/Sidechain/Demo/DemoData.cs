@@ -14,6 +14,7 @@ public static class DemoData
     {
         var s = Settings.Current;
         s.Rules = Rules.Default();
+        s.Rules[0].BoostTriggersDb = 6; // v1.1: Discord gets 6 dB louder while it talks; the headphones' master has 10 dB of room
         s.Pin = new PinSettings
         {
             Enabled = true, Seeded = true,

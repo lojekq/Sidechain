@@ -97,16 +97,16 @@ public static class TrayMenu
         {
             EngineState.Error => Loc.T("State.Error"),
             EngineState.Paused => s.PausedUntil is { } until ? string.Format(Loc.T("State.PausedUntil"), until) : Loc.T("State.Paused"),
-            _ when s.Apps.Any(a => a.GainDb <= -0.5) =>
+            _ when s.Apps.Any(a => Math.Abs(a.GainDb) >= 0.5) =>
                 (s.Speaking.Count > 0 ? string.Join(", ", s.Speaking) + ": " : "") +
-                string.Join(", ", s.Apps.Where(a => a.GainDb <= -0.5).Select(a => $"{a.Title} {FormatDb(a.GainDb)}")),
+                string.Join(", ", s.Apps.Where(a => Math.Abs(a.GainDb) >= 0.5).OrderBy(a => a.GainDb > 0 ? 0 : 1).Select(a => $"{a.Title} {FormatDb(a.GainDb)}")),
             _ => Loc.T("State.Quiet"),
         };
         var tip = $"{AppInfo.DisplayName} — {text}";
         return tip.Length <= 127 ? tip : tip[..126] + "…";
     }
 
-    public static string FormatDb(double db) => string.Format(Loc.T("Db.Format"), Math.Round(db).ToString("0").Replace("-", "−"));
+    public static string FormatDb(double db) => string.Format(Loc.T("Db.Format"), Math.Round(db) switch { > 0 and var v => "+" + v, var v => v.ToString("0").Replace("-", "−") });
 
     /// <summary>Three bars: the left one talks, the other two step aside when ducking.</summary>
     static byte[] Draw(EngineState state, bool red, bool lightTaskbar)

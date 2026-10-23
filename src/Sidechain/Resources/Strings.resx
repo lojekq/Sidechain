@@ -176,6 +176,18 @@ The program, its Start menu shortcut, autostart and the entry in Settings → Ap
   <data name="Devices.MicPin.Note" xml:space="preserve"><value>A webcam or a new headset won't become the default microphone by itself.</value></data>
   <data name="Demo.Mic" xml:space="preserve"><value>Microphone (Arctis Nova 7)</value></data>
   <data name="Demo.Camera" xml:space="preserve"><value>Microphone (USB Camera)</value></data>
+  <data name="Boost.Tip" xml:space="preserve"><value>Boost: make this app louder</value></data>
+  <data name="Boost.Title" xml:space="preserve"><value>Boost {0}</value></data>
+  <data name="Boost.Caption" xml:space="preserve"><value>boost {0}</value></data>
+  <data name="Boost.Room" xml:space="preserve"><value>Room left: {0}</value></data>
+  <data name="Boost.NoRoom" xml:space="preserve"><value>No room left: the device master volume is at 100 %.</value></data>
+  <data name="Boost.Limited" xml:space="preserve"><value>Hit 100 % of the device master volume: it can't get louder than this.</value></data>
+  <data name="Boost.Off" xml:space="preserve"><value>off</value></data>
+  <data name="Boost.Auto" xml:space="preserve"><value>Lift quiet parts automatically (up to {0}, with the leveler)</value></data>
+  <data name="Boost.How" xml:space="preserve"><value>Windows plays no app above 100 %. Sidechain raises the device master volume and turns every other app down by as much, so only this one gets louder. At 100 % master volume there is no more room: only a virtual audio device could go further, and Sidechain installs none.</value></data>
+  <data name="Rules.Boost" xml:space="preserve"><value>Boost triggers</value></data>
+  <data name="Rules.Boost.Summary" xml:space="preserve"><value>triggers {0}</value></data>
+  <data name="Rules.Boost.Note" xml:space="preserve"><value>Louder while they sound.</value></data>
   <data name="Demo.Phones" xml:space="preserve"><value>Headphones (Arctis Nova 7)</value></data>
   <data name="Demo.Speakers" xml:space="preserve"><value>Speakers (Realtek(R) Audio)</value></data>
 </root>

@@ -2,6 +2,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Sidechain.Features.Core;
@@ -34,6 +38,10 @@ public sealed class AppRowVm(string app) : INotifyPropertyChanged
     public ControlAppearance LevelAppearance => Leveled ? ControlAppearance.Primary : ControlAppearance.Secondary;
     public Visibility NormVisibility => Leveled ? Visibility.Visible : Visibility.Collapsed;
     public string LevelTip => Loc.T(Leveled ? "Live.LevelOff" : "Live.LevelOn");
+    public string BoostText { get; private set; } = "";     // v1.1: the room left, or that the master is at 100 %
+    public ControlAppearance BoostAppearance => BoostSet ? ControlAppearance.Primary : ControlAppearance.Secondary;
+    bool BoostSet => Settings.Current.Boost.Any(b => b.App == App) || Settings.Current.Leveler.Any(l => l.App == App && l.MaxBoostDb > 0);
+    bool boostSet;
     AppRole? role;
 
     public void Update(AppRow r)
@@ -42,6 +50,10 @@ public sealed class AppRowVm(string app) : INotifyPropertyChanged
         if (Icon is null && r.ExePath is not null && ExeIcon.Get(r.ExePath) is { } icon) { Icon = icon; Changed(nameof(Icon)); Changed(nameof(GlyphVisibility)); }
         var detail = r.Sessions > 1 ? $"{r.Devices} · {string.Format(Loc.T("Live.Streams"), r.Sessions)}" : r.Devices;
         if (r.LevelerDb is { } lev) detail = string.Format(Loc.T("Live.Leveling"), TrayMenu.FormatDb(lev)) + " · " + detail; // first: the device name gets cut
+        if (r.BoostDb >= 0.5) detail = string.Format(Loc.T("Boost.Caption"), TrayMenu.FormatDb(r.BoostDb)) + " · " + detail;
+        Set(nameof(BoostText), BoostText, r.BoostLimited ? Loc.T("Boost.Limited")
+            : r.BoostRoomDb >= 0.5 ? string.Format(Loc.T("Boost.Room"), TrayMenu.FormatDb(r.BoostRoomDb)) : Loc.T("Boost.NoRoom"), v => BoostText = v);
+        if (boostSet != BoostSet) { boostSet = BoostSet; Changed(nameof(BoostAppearance)); }
         Set(nameof(Detail), Detail, detail, v => Detail = v);
         MedianDb = r.LevelMedianDb;
         if (Leveled != r.LevelerDb.HasValue)
@@ -61,7 +73,7 @@ public sealed class AppRowVm(string app) : INotifyPropertyChanged
         Changed(nameof(Meter));
         Set(nameof(BaselineText), BaselineText, $"{Math.Round(r.Baseline * 100)} %", v => BaselineText = v);
         Set(nameof(GainText), GainText, TrayMenu.FormatDb(r.GainDb), v => GainText = v);
-        var width = Math.Round(150 * Math.Clamp(-r.GainDb / 30, 0, 1));
+        var width = Math.Round(130 * Math.Clamp(Math.Abs(r.GainDb) / 30, 0, 1));
         if (width != GainWidth) { GainWidth = width; Changed(nameof(GainWidth)); }
     }
 
@@ -110,6 +122,63 @@ public partial class LivePage
         }
         Settings.Save();
         Engine.Current?.SetLeveler(list);
+    }
+
+    /// <summary>
+    /// v1.1 boost of the row's app: by hand (0–20 dB) and automatically (the leveler lifts quiet parts up to 12 dB).
+    /// The room and the honest limit are shown live: past 100 % only the device master helps.
+    /// </summary>
+    void BoostClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: AppRowVm row } button) return;
+        var s = Settings.Current;
+        var value = new System.Windows.Controls.TextBlock { FontWeight = FontWeights.SemiBold };
+        var slider = new Slider { Minimum = 0, Maximum = Engine.MaxBoostDb, IsSnapToTickEnabled = true, TickFrequency = 1, Width = 300,
+                                  Value = s.Boost.FirstOrDefault(b => b.App == row.App)?.Db ?? 0 };
+        void Show() => value.Text = slider.Value > 0 ? TrayMenu.FormatDb(slider.Value) : Loc.T("Boost.Off");
+        Show();
+        slider.ValueChanged += (_, _) =>
+        {
+            Show();
+            s.Boost.RemoveAll(b => b.App == row.App);
+            if (slider.Value > 0) s.Boost.Add(new BoostEntry(row.App, slider.Value));
+            Settings.Save();
+            Engine.Current?.SetBoosts(s.Boost);
+        };
+        var entry = s.Leveler.FirstOrDefault(l => l.App == row.App);
+        var auto = new CheckBox
+        {
+            Content = string.Format(Loc.T("Boost.Auto"), TrayMenu.FormatDb(Leveler.DefaultMaxBoostDb)), Margin = new(0, 12, 0, 0),
+            IsChecked = entry?.MaxBoostDb > 0, IsEnabled = entry is not null || s.Leveler.Count < Engine.MaxLeveled,
+        };
+        auto.Click += (_, _) =>
+        {
+            var i = s.Leveler.FindIndex(l => l.App == row.App);
+            var max = auto.IsChecked == true ? Leveler.DefaultMaxBoostDb : 0;
+            if (i >= 0) s.Leveler[i] = s.Leveler[i] with { MaxBoostDb = max };
+            else if (max > 0) s.Leveler.Add(new LevelerEntry(row.App, Leveler.DefaultTargetDb, max));
+            Settings.Save();
+            Engine.Current?.SetLeveler(s.Leveler);
+        };
+        var room = new System.Windows.Controls.TextBlock { TextWrapping = TextWrapping.Wrap, Margin = new(0, 12, 0, 0) };
+        room.SetBinding(System.Windows.Controls.TextBlock.TextProperty, new Binding(nameof(AppRowVm.BoostText)) { Source = row });
+        var note = new System.Windows.Controls.TextBlock { Text = Loc.T("Boost.How"), TextWrapping = TextWrapping.Wrap, Margin = new(0, 8, 0, 0), FontSize = 12, Opacity = 0.75 };
+        var panel = new StackPanel
+        {
+            Width = 340,
+            Children =
+            {
+                new System.Windows.Controls.TextBlock { Text = string.Format(Loc.T("Boost.Title"), row.Title), FontWeight = FontWeights.SemiBold, Margin = new(0, 0, 0, 8) },
+                new DockPanel { Children = { value, slider } },
+                auto, room, note,
+            },
+        };
+        DockPanel.SetDock(value, Dock.Right);
+        var border = new Border { Child = panel, Padding = new(16), CornerRadius = new(8), BorderThickness = new(1) };
+        border.SetResourceReference(Border.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+        border.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
+        border.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush");
+        new Popup { Child = border, PlacementTarget = button, Placement = PlacementMode.Bottom, StaysOpen = false, AllowsTransparency = true, IsOpen = true };
     }
 
     /// <summary>"Make the current level the norm": the median of the last 30 s becomes the target.</summary>

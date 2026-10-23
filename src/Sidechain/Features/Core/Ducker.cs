@@ -8,12 +8,14 @@ public static class Db
     public static double ToScalar(double db) => Math.Pow(10, db / 20);
     public static double FromScalar(double v) => 20 * Math.Log10(Math.Max(v, 1e-6));
 
-    /// <summary>volume = baseline × 10^(gain/20) with gain clamped to [Floor, 0]: never louder than the user's own volume.</summary>
-    public static float Apply(float baseline, double gainDb) => (float)(baseline * ToScalar(Math.Clamp(gainDb, Floor, 0)));
+    /// <summary>volume = baseline × 10^(gain/20), gain not below the floor, the session never above 100 %.
+    /// A positive gain is a boost the user asked for; anything over 100 % goes through the device master (Engine).</summary>
+    public static float Apply(float baseline, double gainDb) => (float)Math.Min(1, baseline * ToScalar(Math.Max(gainDb, Floor)));
 }
 
-/// <summary>One rule as the ducker sees it in a tick: the loudest trigger peak (linear) and the apps it ducks now.</summary>
-public readonly record struct RuleInput(Rule Rule, float Peak, IReadOnlyCollection<string> Targets);
+/// <summary>One rule as the ducker sees it in a tick: the loudest trigger peak (linear), the apps it ducks now,
+/// and its running triggers (boosted while the rule is active, v1.1).</summary>
+public readonly record struct RuleInput(Rule Rule, float Peak, IReadOnlyCollection<string> Targets, IReadOnlyCollection<string>? Triggers = null);
 
 /// <summary>
 /// Gate with hold per rule and an envelope per target app, in dB (spec §5). Pure: time comes from the caller,
@@ -23,9 +25,9 @@ public sealed class Ducker
 {
     public sealed class Target
     {
-        public double Db;                                  // current gain, ≤ 0
+        public double Db;                                  // current gain: < 0 ducked target, > 0 boosted trigger
         public double Want;                                // where it is heading
-        public double DepthDb = 12, AttackMs = 80, ReleaseMs = 600; // of the rule that ducked it last
+        public double DepthDb = 12, AttackMs = 80, ReleaseMs = 600; // of the rule that moved it away from 0 last
         public bool Canceled;                              // the user moved the volume: no ducking until the gate closes
     }
 
@@ -42,8 +44,8 @@ public sealed class Ducker
     public void Step(double nowMs, double dtMs, IReadOnlyList<RuleInput> rules)
     {
         ActiveRules.Clear();
-        var want = new Dictionary<string, Rule>();
-        foreach (var (r, peak, targets) in rules)
+        var want = new Dictionary<string, (double Db, Rule R)>();
+        foreach (var (r, peak, targets, triggers) in rules)
         {
             if (Db.FromScalar(peak) >= r.ThresholdDb)
             {
@@ -55,7 +57,10 @@ public sealed class Ducker
             if (!lastAbove.TryGetValue(r.Id, out var t) || nowMs - t > r.HoldMs) continue;
             ActiveRules.Add(r.Id);
             foreach (var app in targets)
-                if (!want.TryGetValue(app, out var w) || r.DepthDb > w.DepthDb) want[app] = r; // the deepest wins
+                if (!want.TryGetValue(app, out var w) || -r.DepthDb < w.Db) want[app] = (-r.DepthDb, r); // the deepest wins
+            if (r.BoostTriggersDb > 0)
+                foreach (var app in triggers ?? [])
+                    if (!want.TryGetValue(app, out var w) || r.BoostTriggersDb > w.Db) want[app] = (r.BoostTriggersDb, r);
         }
         foreach (var id in lastAbove.Keys.Where(id => rules.All(r => r.Rule.Id != id)).ToList()) lastAbove.Remove(id);
         foreach (var id in loud.Keys.Where(id => rules.All(r => r.Rule.Id != id)).ToList()) loud.Remove(id);
@@ -63,17 +68,16 @@ public sealed class Ducker
         foreach (var app in want.Keys) Targets.TryAdd(app, new Target());
         foreach (var (app, t) in Targets.ToList())
         {
-            var r = want.GetValueOrDefault(app);
-            if (r is null) t.Canceled = false;
-            t.Want = r is null || t.Canceled ? 0 : -r.DepthDb;
-            if (t.Want < t.Db)
-            {
-                (t.DepthDb, t.AttackMs, t.ReleaseMs) = (r!.DepthDb, r.AttackMs, r.ReleaseMs);
-                t.Db = Math.Max(t.Want, t.Db - t.DepthDb / Math.Max(t.AttackMs, 1) * dtMs);
-            }
-            else if (t.Want > t.Db) t.Db = Math.Min(t.Want, t.Db + t.DepthDb / Math.Max(t.ReleaseMs, 1) * dtMs);
+            var has = want.TryGetValue(app, out var w);
+            if (!has) t.Canceled = false;
+            t.Want = !has || t.Canceled ? 0 : w.Db;
+            // Away from 0 (ducking deeper, boosting more) at the attack of the rule asking for it; back towards 0 at the release
+            var away = Math.Abs(t.Want) > Math.Abs(t.Db) && (t.Db == 0 || Math.Sign(t.Want) == Math.Sign(t.Db));
+            if (away) (t.DepthDb, t.AttackMs, t.ReleaseMs) = (Math.Abs(w.Db), w.R.AttackMs, w.R.ReleaseMs);
+            var step = t.DepthDb / Math.Max(away ? t.AttackMs : t.ReleaseMs, 1) * dtMs;
+            t.Db = t.Want > t.Db ? Math.Min(t.Want, t.Db + step) : Math.Max(t.Want, t.Db - step);
             t.Db = Math.Max(t.Db, Db.Floor);
-            if (r is null && t.Db == 0) Targets.Remove(app);
+            if (!has && t.Db == 0) Targets.Remove(app);
         }
     }
 

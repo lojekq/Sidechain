@@ -30,10 +30,10 @@
                                     <ColumnDefinition Width="40" />
                                     <ColumnDefinition Width="*" MinWidth="150" />
                                     <ColumnDefinition Width="90" />
-                                    <ColumnDefinition Width="170" />
-                                    <ColumnDefinition Width="90" />
-                                    <ColumnDefinition Width="150" />
-                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="140" />
+                                    <ColumnDefinition Width="84" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="132" />
                                 </Grid.ColumnDefinitions>
                                 <Grid Width="28" Height="28" HorizontalAlignment="Left">
                                     <Border CornerRadius="14" Background="{Binding Badge}" Visibility="{Binding GlyphVisibility}">
@@ -72,7 +72,9 @@
                                     <ui:Button Icon="{ui:SymbolIcon Pin24}" ToolTip="{l:T Live.Norm}" Visibility="{Binding NormVisibility}"
                                                Click="NormClick" Margin="0,0,4,0" />
                                     <ui:Button Icon="{ui:SymbolIcon DeviceEq24}" ToolTip="{Binding LevelTip}" Appearance="{Binding LevelAppearance}"
-                                               Click="LevelClick" />
+                                               Click="LevelClick" Margin="0,0,4,0" />
+                                    <ui:Button Icon="{ui:SymbolIcon TopSpeed24}" ToolTip="{l:T Boost.Tip}" Appearance="{Binding BoostAppearance}"
+                                               Click="BoostClick" />
                                 </StackPanel>
                             </Grid>
                         </Border>

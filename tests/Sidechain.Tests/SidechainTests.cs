@@ -32,6 +32,9 @@ sealed class FakeBackend : IAudioBackend
     public void SetDefault(string id, bool communications) => Default = id;
     public (string Title, string? ExePath) Describe(AudioSession s) => (s.App, null);
     public ILevel? StartLevel(int pid) => new Level(this, pid);
+    public readonly Dictionary<string, float> MasterDb = new() { ["dev"] = -12 };
+    public MasterVolume? Master(string id) => MasterDb.TryGetValue(id, out var db) ? new MasterVolume(db, -65.25f, 0) : null;
+    public void SetMaster(string id, float db) => MasterDb[id] = Math.Clamp(db, -65.25f, 0);
 
     /// <summary>Like process loopback: what plays after the session volume.</summary>
     sealed class Level(FakeBackend b, int pid) : ILevel
@@ -142,7 +145,8 @@ public class SidechainTests
     {
         Assert.AreEqual(0.251, Db.ToScalar(-12), 0.001);
         Assert.AreEqual(-7.5, Db.FromScalar(Db.ToScalar(-7.5)), 1e-9);
-        Assert.AreEqual(0.6f, Db.Apply(0.6f, +6), 1e-6f);          // never louder than the baseline
+        Assert.AreEqual(1f, Db.Apply(0.6f, +6), 1e-6f);            // a boost, but a session never above 100 %
+        Assert.AreEqual(0.599f, Db.Apply(0.3f, +6), 0.001f);
         Assert.AreEqual(0.6f * 0.01f, Db.Apply(0.6f, -60), 1e-6f); // floor −40 dB
     }
 
@@ -278,6 +282,148 @@ public class SidechainTests
         run(100);
         Assert.AreEqual(0.5f, audio.Volume[chrome.Key]);
         Assert.IsEmpty(journal.Entries);
+    }
+
+    // ---- Boost (v1.1): the device master up, every other session down as much ----
+
+    static (Engine Engine, FakeBackend Audio, Func<double, double> Run, RestoreJournal Journal) Boosted(string file, float discordVolume = 1, float master = -12)
+    {
+        var journal = RestoreJournal.Load(file, DateTime.Now);
+        var audio = new FakeBackend();
+        audio.MasterDb["dev"] = master;
+        audio.Add("discord", discordVolume);
+        audio.Add("spotify", 0.8f);
+        audio.Add(AudioSession.SystemSounds, 1f);
+        var (engine, _, run) = Start(journal, audio);
+        engine.SetBoosts([new BoostEntry("discord", 6)]);
+        return (engine, audio, run, journal);
+    }
+
+    [TestMethod]
+    public void BoostLiftsTheMasterAndLowersTheOthers()
+    {
+        var (engine, audio, run, journal) = Boosted(Path.Combine(NewDir(), "restore.json"));
+        run(200);
+        Assert.AreEqual(-6f, audio.MasterDb["dev"], 0.01f);
+        Assert.AreEqual(1f, audio.Volume["discord#0"]);
+        Assert.AreEqual(0.8 * Db.ToScalar(-6), audio.Volume["spotify#1"], 0.002);  // sounds as before: −6 in the session, +6 on the master
+        Assert.AreEqual(Db.ToScalar(-6), audio.Volume["#2"], 0.002);              // system sounds too
+        Assert.HasCount(3, journal.Entries);
+        var row = engine.Snapshot.Apps.Single(a => a.App == "discord");
+        Assert.AreEqual(6, row.BoostDb, 0.01);
+        Assert.AreEqual(6, row.BoostRoomDb, 0.01);                                 // the master had 12 dB of room
+        Assert.IsFalse(engine.Snapshot.Apps.Any(a => a.App == AudioSession.SystemSounds));
+
+        engine.Pause(null);
+        run(100);
+        Assert.AreEqual(-12f, audio.MasterDb["dev"]);
+        Assert.AreEqual(0.8f, audio.Volume["spotify#1"]);
+        Assert.AreEqual(1f, audio.Volume["#2"]);
+        Assert.IsEmpty(journal.Entries);
+    }
+
+    [TestMethod]
+    public void BoostStopsAtTheTopOfTheMaster()
+    {
+        var (engine, audio, run, _) = Boosted(Path.Combine(NewDir(), "restore.json"), master: -2);
+        run(200);
+        Assert.AreEqual(0f, audio.MasterDb["dev"], 0.01f);
+        var row = engine.Snapshot.Apps.Single(a => a.App == "discord");
+        Assert.AreEqual(2, row.BoostDb, 0.01);
+        Assert.IsTrue(row.BoostLimited);
+        Assert.AreEqual(0, row.BoostRoomDb, 0.01);
+    }
+
+    [TestMethod]
+    public void BoostUsesTheSessionsOwnRoomFirst()
+    {
+        var (_, audio, run, journal) = Boosted(Path.Combine(NewDir(), "restore.json"), discordVolume: 0.5f);
+        run(200);
+        Assert.AreEqual(-12f, audio.MasterDb["dev"]);                              // 0.5 → 1.0 is +6 dB already
+        Assert.AreEqual(0.998f, audio.Volume["discord#0"], 0.001f);                // 0.5 × 10^(6/20)
+        Assert.AreEqual(0.8f, audio.Volume["spotify#1"]);
+        Assert.HasCount(1, journal.Entries);
+    }
+
+    [TestMethod]
+    public void MasterMovedByHandIsNotFought()
+    {
+        var (engine, audio, run, _) = Boosted(Path.Combine(NewDir(), "restore.json"));
+        run(200);
+        audio.MasterDb["dev"] = -10;                                               // the user turns everything down 4 dB
+        run(500);
+        Assert.AreEqual(-10f, audio.MasterDb["dev"]);
+        engine.Pause(null);
+        run(100);
+        Assert.AreEqual(-16f, audio.MasterDb["dev"], 0.01f);                      // their level, 4 dB lower than before
+    }
+
+    [TestMethod]
+    public void KilledWhileBoostingIsRestoredOnNextStart()
+    {
+        var file = Path.Combine(NewDir(), "restore.json");
+        var (_, audio, run, _) = Boosted(file);
+        run(200);                                                                  // then killed: the master stays up, the others down
+        var after = new FakeBackend();
+        after.MasterDb["dev"] = audio.MasterDb["dev"];
+        var spotify = after.Add("spotify", audio.Volume["spotify#1"]);
+        var journal = RestoreJournal.Load(file, DateTime.Now);
+        Start(journal, after).Run(100);
+        Assert.AreEqual(-12f, after.MasterDb["dev"]);
+        Assert.AreEqual(0.8f, after.Volume[spotify.Key]);
+        Assert.IsEmpty(journal.Entries.Where(e => e.App != AudioSession.SystemSounds)); // system sounds come back when their session shows up
+    }
+
+    [TestMethod]
+    public void StopRestoresAfterTheLastTick()
+    {
+        // The audio thread for real: a restore queued as a command used to run inside a tick that boosted again right after
+        for (var i = 0; i < 20; i++)
+        {
+            var journal = RestoreJournal.Load(Path.Combine(NewDir(), "restore.json"), DateTime.Now);
+            var audio = new FakeBackend();
+            audio.Add("discord", 1f);
+            var spotify = audio.Add("spotify", 0.8f);
+            var engine = new Engine(() => audio, journal);
+            engine.Start([], new PinSettings(), [], [new BoostEntry("discord", 6)]);
+            Thread.Sleep(60 + i * 7);
+            engine.Stop();
+            Assert.AreEqual(-12f, audio.MasterDb["dev"], $"run {i}");
+            Assert.AreEqual(0.8f, audio.Volume[spotify.Key], $"run {i}");
+            Assert.IsEmpty(journal.Entries, $"run {i}");
+        }
+    }
+
+    [TestMethod]
+    public void LevelerLiftsQuietSourcesButNotNoise()
+    {
+        var l = new Leveler();
+        double now = 0;
+        void Run(double s, double db) { for (var end = now + s * 1000; now < end;) { now += 25; l.Step(now, 25, db, -20, 12); } }
+        Run(5, -30);                       // a quiet voice: 1 dB/s up
+        Assert.AreEqual(5, l.GainDb, 0.01);
+        Run(3, -45);                       // a pause with room noise: held, never pumped up
+        Assert.AreEqual(5, l.GainDb, 0.01);
+        Run(10, -30);
+        Assert.AreEqual(10, l.GainDb, 0.01);
+        Run(1, -10);                       // something loud: 6 dB/s down
+        Assert.AreEqual(4, l.GainDb, 0.01);
+    }
+
+    [TestMethod]
+    public void RuleBoostsItsTriggersWhileTheySound()
+    {
+        var r = Rule("discord", "spotify");
+        r.BoostTriggersDb = 6;
+        var d = new Ducker();
+        double now = 0;
+        void Run(double ms, float peak) { for (var end = now + ms; now < end;) { now += 25; d.Step(now, 25, [new(r, peak, r.Targets, r.Triggers)]); } }
+        Run(100, 1);
+        Assert.AreEqual(6, d.Gain("discord"));
+        Assert.AreEqual(-12, d.Gain("spotify"));
+        Assert.IsTrue(d.Ducking);
+        Run(1100, 0);
+        Assert.AreEqual(0, d.Gain("discord"));
     }
 
     // ---- RestoreJournal ----

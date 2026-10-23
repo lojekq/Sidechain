@@ -9,6 +9,7 @@ namespace Sidechain.Shell
         public PinSettings Pin { get; set; } = new();
         public int? WindowsDuckingBackup { get; set; }       // value before "Turn off"; -1 = there was none
         public List<LevelerEntry> Leveler { get; set; } = []; // v1.0: apps turned down when they get loud, 3 at most
+        public List<BoostEntry> Boost { get; set; } = [];     // v1.1: apps made louder by hand
         public string? PauseHotkey { get; set; } = "Ctrl+Alt+Shift+S"; // v1.0: pause / resume; null = none
     }
 }

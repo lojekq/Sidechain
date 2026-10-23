@@ -2,8 +2,15 @@ using Sidechain.Features.Core;
 
 namespace Sidechain.Features.Audio;
 
-/// <summary>One audio session of an app on an output device. Key = session instance id (unique, changes when the stream is recreated).</summary>
-public sealed record AudioSession(string Key, string App, int Pid, string DeviceId);
+/// <summary>One audio session of an app on an output device. Key = session instance id (unique, changes when the stream is recreated).
+/// App is "" for Windows system sounds: never ducked or shown, only kept level when a boost lifts the device master (v1.1).</summary>
+public sealed record AudioSession(string Key, string App, int Pid, string DeviceId)
+{
+    public const string SystemSounds = "";
+}
+
+/// <summary>A device master volume in dB and its range; 100 % is the top of the range.</summary>
+public readonly record struct MasterVolume(float Db, float MinDb, float MaxDb);
 
 /// <summary>v1.0 leveler: the loudness of one process tree, measured after the session volume.</summary>
 public interface ILevel : IDisposable
@@ -19,7 +26,7 @@ public interface ILevel : IDisposable
 /// </summary>
 public interface IAudioBackend : IDisposable
 {
-    /// <summary>Sessions of apps on all active output devices; system sounds and expired sessions left out.</summary>
+    /// <summary>Sessions of apps on all active output devices, system sounds as app ""; expired sessions left out.</summary>
     IReadOnlyList<AudioSession> Enumerate();
     float Peak(AudioSession s);
     float GetVolume(AudioSession s);
@@ -37,4 +44,9 @@ public interface IAudioBackend : IDisposable
 
     /// <summary>v1.0 leveler: starts measuring a process tree; null when it can't be measured.</summary>
     ILevel? StartLevel(int pid);
+
+    /// <summary>v1.1 boost: the master volume of an active output device; null when it has none.</summary>
+    MasterVolume? Master(string deviceId);
+    /// <summary>In dB, clamped to the device range. Mute is never touched.</summary>
+    void SetMaster(string deviceId, float db);
 }

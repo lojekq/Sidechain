@@ -176,6 +176,18 @@
   <data name="Devices.MicPin.Note" xml:space="preserve"><value>Веб-камера или новая гарнитура не станут микрофоном по умолчанию сами.</value></data>
   <data name="Demo.Mic" xml:space="preserve"><value>Микрофон (Arctis Nova 7)</value></data>
   <data name="Demo.Camera" xml:space="preserve"><value>Микрофон (USB Camera)</value></data>
+  <data name="Boost.Tip" xml:space="preserve"><value>Усиление: сделать это приложение громче</value></data>
+  <data name="Boost.Title" xml:space="preserve"><value>Усиление: {0}</value></data>
+  <data name="Boost.Caption" xml:space="preserve"><value>усиление {0}</value></data>
+  <data name="Boost.Room" xml:space="preserve"><value>Запас: ещё {0}</value></data>
+  <data name="Boost.NoRoom" xml:space="preserve"><value>Запаса нет: общая громкость устройства на 100 %.</value></data>
+  <data name="Boost.Limited" xml:space="preserve"><value>Упёрлись в 100 % общей громкости устройства: громче не получится.</value></data>
+  <data name="Boost.Off" xml:space="preserve"><value>выкл.</value></data>
+  <data name="Boost.Auto" xml:space="preserve"><value>Подтягивать тихое автоматически (до {0}, выравнивателем)</value></data>
+  <data name="Boost.How" xml:space="preserve"><value>Windows не даёт приложению звучать громче 100 %. Sidechain поднимает общую громкость устройства и на столько же убавляет остальные приложения, поэтому громче становится только это. Когда общая громкость на 100 %, запаса нет: дальше помогло бы только виртуальное аудиоустройство, а Sidechain его не ставит.</value></data>
+  <data name="Rules.Boost" xml:space="preserve"><value>Усилить триггеры</value></data>
+  <data name="Rules.Boost.Summary" xml:space="preserve"><value>триггеры {0}</value></data>
+  <data name="Rules.Boost.Note" xml:space="preserve"><value>Громче, пока звучат.</value></data>
   <data name="Demo.Phones" xml:space="preserve"><value>Наушники (Arctis Nova 7)</value></data>
   <data name="Demo.Speakers" xml:space="preserve"><value>Динамики (Realtek(R) Audio)</value></data>
 </root>

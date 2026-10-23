@@ -31,6 +31,7 @@ public partial class RulesPage
         AllOthersAdd.Click += (_, _) => { if (!editing!.Targets.Contains(Rules.AllOthers)) editing.Targets.Add(Rules.AllOthers); ShowApps(); };
         ThresholdSlider.ValueChanged += (_, _) => { if (editing is null) return; editing.ThresholdDb = ThresholdSlider.Value; ShowValues(); };
         DepthSlider.ValueChanged += (_, _) => { if (editing is null) return; editing.DepthDb = DepthSlider.Value; ShowValues(); };
+        BoostSlider.ValueChanged += (_, _) => { if (editing is null) return; editing.BoostTriggersDb = BoostSlider.Value; ShowValues(); };
         SaveButton.Click += (_, _) => Save();
         CancelButton.Click += (_, _) => Close();
         MeterBox.SizeChanged += (_, _) => ShowValues();
@@ -58,7 +59,8 @@ public partial class RulesPage
             var all = apps.Select(a => AppTitle(a, s)).ToList();
             return all.Count <= max ? string.Join(", ", all) : string.Join(", ", all.Take(max)) + $" +{all.Count - max}";
         }
-        return $"{List(r.Triggers, s, 3)} → {List(r.Targets, s, 3)} · {TrayMenu.FormatDb(-r.DepthDb)}";
+        var boost = r.BoostTriggersDb > 0 ? " · " + string.Format(Loc.T("Rules.Boost.Summary"), TrayMenu.FormatDb(r.BoostTriggersDb)) : "";
+        return $"{List(r.Triggers, s, 3)} → {List(r.Targets, s, 3)} · {TrayMenu.FormatDb(-r.DepthDb)}{boost}";
     }
 
     void BuildList()
@@ -142,6 +144,7 @@ public partial class RulesPage
         EditorTitle.Text = index < 0 ? Loc.T("Rules.New") : string.Format(Loc.T("Rules.Name"), index + 1);
         ThresholdSlider.Value = editing.ThresholdDb;
         DepthSlider.Value = editing.DepthDb;
+        BoostSlider.Value = editing.BoostTriggersDb;
         AttackBox.Value = editing.AttackMs;
         HoldBox.Value = editing.HoldMs;
         ReleaseBox.Value = editing.ReleaseMs;
@@ -204,6 +207,7 @@ public partial class RulesPage
         if (editing is null) return;
         ThresholdText.Text = string.Format(Loc.T("Rules.Dbfs"), editing.ThresholdDb.ToString("0").Replace("-", "−"));
         DepthText.Text = TrayMenu.FormatDb(-editing.DepthDb);
+        BoostText.Text = editing.BoostTriggersDb > 0 ? TrayMenu.FormatDb(editing.BoostTriggersDb) : Loc.T("Boost.Off");
         Canvas.SetLeft(ThresholdLine, Math.Max(0, (editing.ThresholdDb - MeterFloorDb) / -MeterFloorDb * MeterBox.ActualWidth - 1.5));
     }
 

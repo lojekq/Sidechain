@@ -30,5 +30,19 @@ public static class AudioFacts
     /// </summary>
     public const bool WindowsDuckingAppliesLive = false;
 
+    /// <summary>
+    /// v1.1 boost spike: the device master volume is set exactly in dB within the device's own range (0…+16 dB on a USB
+    /// headset, −65…0 dB on most others; 100 % = the top of the range). Session peaks, process loopback and device loopback
+    /// all come before it. So the master can lift one app above 100 % of its session if every other session goes down as much.
+    /// </summary>
+    public const bool MeasuredBeforeMaster = true;
+
+    /// <summary>
+    /// Process loopback opens an audio session of the capturing process on the captured app's device, and that session's volume
+    /// scales the capture. Lowered as "another app" during a boost, it made the leveler hear itself 6 dB quieter and stall.
+    /// So Sidechain's own sessions are left out of everything (CoreAudioBackend).
+    /// </summary>
+    public const bool LoopbackOpensOwnSession = true;
+
     // Not checked (owner's UAC slot): whether a session of an elevated process can be controlled without elevation.
 }

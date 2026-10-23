@@ -66,13 +66,14 @@ public sealed class CoreAudioBackend : IAudioBackend
                 var c = list[i];
                 try
                 {
-                    if (c.State == AudioSessionState.AudioSessionStateExpired || c.IsSystemSoundsSession) { c.Dispose(); continue; }
+                    if (c.State == AudioSessionState.AudioSessionStateExpired) { c.Dispose(); continue; }
                     var key = c.GetSessionInstanceIdentifier;
                     if (!keys.Add(key)) { c.Dispose(); continue; }
                     if (sessions.TryGetValue(key, out var cached)) { c.Dispose(); c = cached; }
                     else sessions[key] = c;
                     var pid = (int)c.GetProcessID;
-                    if (App(pid) is { } app) found.Add(new(key, app, pid, id));
+                    if (pid == Environment.ProcessId) continue; // our own: process loopback opens one, and its volume scales what the leveler hears
+                    if ((c.IsSystemSoundsSession ? AudioSession.SystemSounds : App(pid)) is { } app) found.Add(new(key, app, pid, id));
                 }
                 catch (Exception e) when (e is not OutOfMemoryException) { c.Dispose(); } // the session went away meanwhile
             }
@@ -106,6 +107,22 @@ public sealed class CoreAudioBackend : IAudioBackend
 
     public ILevel? StartLevel(int pid) => LevelMeter.Start(pid);
 
+    public MasterVolume? Master(string deviceId)
+    {
+        if (devices.Count == 0) Devices();
+        if (!devices.TryGetValue(deviceId, out var d)) return null; // not active now
+        var v = d.Device.AudioEndpointVolume;
+        var r = v.VolumeRange;
+        return new MasterVolume(v.MasterVolumeLevel, r.MinDecibels, r.MaxDecibels);
+    }
+
+    public void SetMaster(string deviceId, float db)
+    {
+        if (!devices.TryGetValue(deviceId, out var d)) return;
+        var v = d.Device.AudioEndpointVolume;
+        v.MasterVolumeLevel = Math.Clamp(db, v.VolumeRange.MinDecibels, v.VolumeRange.MaxDecibels); // out of range is E_INVALIDARG
+    }
+
     static string Take(MMDevice d)
     {
         using (d) return d.ID;
@@ -120,6 +137,7 @@ public sealed class CoreAudioBackend : IAudioBackend
 
     public (string Title, string? ExePath) Describe(AudioSession s)
     {
+        if (s.App == AudioSession.SystemSounds) return ("Windows", null);
         if (titles.TryGetValue(s.App, out var t)) return t;
         var exe = ProcessInfo.ExePath(s.Pid);
         string? title = null;

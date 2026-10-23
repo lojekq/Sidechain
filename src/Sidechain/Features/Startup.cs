@@ -47,7 +47,7 @@ public static class Startup
                 else if (e.Mode == PowerModes.Resume) engine.Resumed();
             };
         if (demo) DemoData.Fill(engine);
-        engine.Start(s.Rules, s.Pin, s.Leveler);
+        engine.Start(s.Rules, s.Pin, s.Leveler, s.Boost);
         PauseHotkey.Apply();
         SettingsPage.AppSection = SettingsSection.Create;
     }

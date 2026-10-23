@@ -39,7 +39,9 @@
                     <Grid Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="24" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
@@ -63,6 +65,14 @@
                             </Grid>
                             <ui:TextBlock Text="{l:T Rules.Depth.Note}" FontTypography="Caption" Appearance="Secondary" TextWrapping="Wrap" Margin="0,0,0,6" />
                             <Slider x:Name="DepthSlider" Minimum="3" Maximum="30" SmallChange="1" LargeChange="3" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,12,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <Grid>
+                                <ui:TextBlock Text="{l:T Rules.Boost}" FontTypography="BodyStrong" />
+                                <ui:TextBlock x:Name="BoostText" HorizontalAlignment="Right" />
+                            </Grid>
+                            <ui:TextBlock Text="{l:T Rules.Boost.Note}" FontTypography="Caption" Appearance="Secondary" TextWrapping="Wrap" Margin="0,0,0,6" />
+                            <Slider x:Name="BoostSlider" Minimum="0" Maximum="12" SmallChange="1" LargeChange="3" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,12,0,0" />
                         </StackPanel>
                     </Grid>
 
