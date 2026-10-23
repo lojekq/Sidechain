@@ -28,9 +28,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         var a = Args.Current;
-        Crash.Install(this);
-        Settings.Load();
-        Loc.Apply(Settings.Current.Language);
+        Crash.Install(this); // Settings and Loc are already loaded in Program.Main
         // App hooks that --uninstall needs (App.RemoveData) go here, before the installer; Sidechain registers nothing of its own.
         // Update and uninstall close the running copy through the exit channel: Quit → App.Exiting → volumes back first.
         if (await Installer.HandleAsync()) // install, update, switch to the installed copy or uninstall: this process is done
