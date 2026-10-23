@@ -73,7 +73,7 @@ public sealed class AppRowVm(string app) : INotifyPropertyChanged
         Changed(nameof(Meter));
         Set(nameof(BaselineText), BaselineText, $"{Math.Round(r.Baseline * 100)} %", v => BaselineText = v);
         Set(nameof(GainText), GainText, TrayMenu.FormatDb(r.GainDb), v => GainText = v);
-        var width = Math.Round(130 * Math.Clamp(Math.Abs(r.GainDb) / 30, 0, 1));
+        var width = Math.Round(120 * Math.Clamp(Math.Abs(r.GainDb) / 30, 0, 1));
         if (width != GainWidth) { GainWidth = width; Changed(nameof(GainWidth)); }
     }
 

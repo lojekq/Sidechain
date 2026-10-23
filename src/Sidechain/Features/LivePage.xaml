@@ -28,12 +28,12 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="40" />
-                                    <ColumnDefinition Width="*" MinWidth="150" />
+                                    <ColumnDefinition Width="*" MinWidth="110" />
                                     <ColumnDefinition Width="90" />
-                                    <ColumnDefinition Width="140" />
+                                    <ColumnDefinition Width="120" />
                                     <ColumnDefinition Width="84" />
-                                    <ColumnDefinition Width="130" />
-                                    <ColumnDefinition Width="132" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="120" />
                                 </Grid.ColumnDefinitions>
                                 <Grid Width="28" Height="28" HorizontalAlignment="Left">
                                     <Border CornerRadius="14" Background="{Binding Badge}" Visibility="{Binding GlyphVisibility}">
