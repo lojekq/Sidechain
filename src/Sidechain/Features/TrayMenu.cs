@@ -102,7 +102,7 @@ public static class TrayMenu
                 string.Join(", ", s.Apps.Where(a => Math.Abs(a.GainDb) >= 0.5).OrderBy(a => a.GainDb > 0 ? 0 : 1).Select(a => $"{a.Title} {FormatDb(a.GainDb)}")),
             _ => Loc.T("State.Quiet"),
         };
-        var tip = $"{AppInfo.DisplayName} — {text}";
+        var tip = $"{AppInfo.Title} — {text}"; // "Sidechain (dev)" marks a dev instance
         return tip.Length <= 127 ? tip : tip[..126] + "…";
     }
 
